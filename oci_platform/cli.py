@@ -193,7 +193,13 @@ def _configure_interactively(config_path: Path) -> int:
         "Availability Domain name", str(target.get("availability_domain", "")), required=True
     )
     target["vcn_ocid"] = _ask("Existing VCN OCID", str(target.get("vcn_ocid", "")), required=True)
+    if not target["vcn_ocid"].startswith("ocid1.vcn."):
+        print("The VCN value must be an OCI VCN OCID; no changes were saved.")
+        return 2
     target["subnet_ocid"] = _ask("Existing public subnet OCID (optional)", str(target.get("subnet_ocid", "")))
+    if target["subnet_ocid"] and not target["subnet_ocid"].startswith("ocid1.subnet."):
+        print("The subnet value must be an OCI subnet OCID; no changes were saved.")
+        return 2
     target["display_name"] = _ask("Instance display name", str(target.get("display_name", "oci-a1-free-instance")), required=True)
 
     for key, prompt, default in (
@@ -232,13 +238,28 @@ def _configure_interactively(config_path: Path) -> int:
         "Boot volume performance in VPUs per GB", str(target.get("boot_volume_vpus_per_gb", 10)),
         integer=True, minimum=10,
     )
+    if target["boot_volume_vpus_per_gb"] > 120:
+        print("Boot volume performance must not exceed 120 VPUs per GB; no changes were saved.")
+        return 2
     target["assign_public_ip"] = _ask_yes_no("Assign a public IPv4 address?", target.get("assign_public_ip") is True)
-    target["ssh_public_key_file"] = str(Path(_ask(
+    ssh_public_key_path = Path(_ask(
         "Path to your SSH PUBLIC key file (never a private key)",
         str(Path(target.get("ssh_public_key_file", "~/.ssh/id_ed25519.pub")).expanduser()),
         required=True,
-    )).expanduser())
+    )).expanduser()
+    try:
+        ssh_public_key = ssh_public_key_path.read_text(encoding="utf-8").strip()
+    except OSError:
+        print(f"SSH public key file is not readable: {ssh_public_key_path}; no changes were saved.")
+        return 2
+    if not ssh_public_key.startswith(("ssh-ed25519 ", "ssh-rsa ", "ecdsa-sha2-")):
+        print("The selected file does not look like an OpenSSH public key; no changes were saved.")
+        return 2
+    target["ssh_public_key_file"] = str(ssh_public_key_path)
     target["image_ocid"] = _ask("Pinned Ubuntu 24.04 ARM64 image OCID", str(target.get("image_ocid", "")), required=True)
+    if not target["image_ocid"].startswith("ocid1.image."):
+        print("The image value must be an OCI image OCID; no changes were saved.")
+        return 2
     target["image_console_always_free_confirmed"] = _ask_yes_no(
         "Have you personally verified this exact image is marked 'Always Free Eligible' in OCI Console?",
         target.get("image_console_always_free_confirmed") is True,
@@ -295,7 +316,7 @@ def _configure_interactively(config_path: Path) -> int:
 
     backup_path = None
     if config_path.exists():
-        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
         backup_path = config_path.with_name(f"{config_path.name}.{stamp}.bak")
         shutil.copy2(config_path, backup_path)
         if os.name == "posix":
