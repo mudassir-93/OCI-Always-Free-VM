@@ -139,9 +139,11 @@ class CliSetupTests(unittest.TestCase):
             ssh_key = root / "id_ed25519.pub"
             ssh_key.write_text("ssh-ed25519 AAAATEST example", encoding="utf-8")
             answers = [
-                "y", "", "", "us-phoenix-1", "", "y", "example-ad",
-                "ocid1.vcn.example", "", "", "", "", "", "", str(ssh_key),
-                "ocid1.image.example", "y", "y",
+                "y", "", "", "us-phoenix-1", "",
+                "", "", "", "", "", "", "", "y",
+                "example-ad", "ocid1.vcn.example", "", "",
+                "", "", "", "", "", str(ssh_key), "ocid1.image.example", "y",
+                "", "", "", "", "", "", "", "", "y",
             ]
             with patch("builtins.input", side_effect=answers), patch(
                 "oci_platform.cli.default_state_dir", return_value=root / "state"
