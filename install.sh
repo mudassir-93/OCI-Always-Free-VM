@@ -14,7 +14,7 @@ for candidate in python3.12 python3.11 python3; do
     version="$("$candidate" -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
     major="${version%%.*}"
     minor="${version#*.}"
-    if (( major > 3 || (major == 3 && minor >= 11) )); then
+    if (( major == 3 && minor >= 11 )); then
       PYTHON="$candidate"
       break
     fi
