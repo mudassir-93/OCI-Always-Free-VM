@@ -77,8 +77,9 @@ For each future milestone, append:
 - Added offline CLI tests for setup preservation, profile redaction/selection, engine argument mapping, read-only defaults, and process-lock behavior.
 - Added a GitHub Actions matrix for Windows/Linux and Python 3.11/3.12.
 - Updated README, AGENTS.md, and project memory for the new CLI foundation and gradual backward-compatibility approach.
-- Tests run locally: none; this environment only provided repository-level GitHub operations. CI is pending and must pass before this milestone is accepted.
-- Tests not run: Windows/Linux execution, package build/install, all offline unit tests, and live OCI tests. No live OCI operations were attempted.
+- Local tests: not run in this environment because outbound GitHub access was unavailable for cloning the branch.
+- CI evidence: the legacy Python checks passed on Python 3.11 and 3.12. The new CLI matrix passed all four Windows/Linux × Python 3.11/3.12 jobs on commit `086eedc295be41f6d46ccba9b5eea610a808c7a3`; the logs show all 24 offline tests passed on Windows and Linux, and wheel template inclusion plus CLI entry-point checks passed on Ubuntu. A final rerun is in progress after a workflow-trigger-only adjustment.
+- Tests not run: manual testing on the operator's own fresh Windows/Linux machines and live OCI tests. No live OCI operations were attempted.
 - Safety review: no account-specific values or credentials were added; setup does not contact OCI or overwrite an existing config; VM creation still requires the original three independent switches and live preflight.
-- Known risks / next checks: validate wheel/editable installation, Windows file-lock behavior, CLI error handling, README command accuracy, and CI matrix results. Do not merge until CI and code review pass.
+- Known risks / next checks: perform a human review of CLI UX and configuration migration behavior; verify the final CI rerun. The one-command installer and interactive wizard remain intentionally out of scope. Do not merge until the final checks and operator review are complete.
 - Next task: fix any CI or review findings, then prepare a draft PR for operator review. Installer and guided wizard remain a later milestone.
