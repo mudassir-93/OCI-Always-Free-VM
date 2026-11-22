@@ -1,8 +1,9 @@
-import configparser
 import contextlib
 import io
 import json
 import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -226,8 +227,24 @@ class CliEngineIntegrationTests(unittest.TestCase):
             lock_path = Path(temp) / "automation.lock"
             first = engine.acquire_process_lock(lock_path)
             try:
-                with self.assertRaises(BlockingIOError):
-                    engine.acquire_process_lock(lock_path)
+                child_code = """
+import sys
+from pathlib import Path
+import oci_free_watch
+try:
+    handle = oci_free_watch.acquire_process_lock(Path(sys.argv[1]))
+except BlockingIOError:
+    raise SystemExit(23)
+handle.close()
+raise SystemExit(0)
+"""
+                child = subprocess.run(
+                    [sys.executable, "-c", child_code, str(lock_path)],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(child.returncode, 23, child.stdout + child.stderr)
             finally:
                 first.close()
             second = engine.acquire_process_lock(lock_path)
