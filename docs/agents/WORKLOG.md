@@ -51,4 +51,17 @@ For each future milestone, append:
 - Added CI checks for shell syntax and executable file mode.
 - GitHub Actions passed on Python 3.11 and 3.12, including dependency install, Python compilation, bash -n, executable-bit validation, and unit tests.
 - No live OCI API operations or production VPS changes were performed.
-- PR #3 contains these changes and awaits merge/review.
+- PR #3 was merged into main after the Python 3.11 and 3.12 CI matrix passed.
+
+
+## 2026-11-22 — Practical AI-agent onboarding documentation
+
+- Replaced the short AI-agent note in README.md with a practical end-to-end guide for opening and using the repository in Codex, Claude Code, Gemini CLI, Google Antigravity, GitHub Copilot, Cursor, and other agentic IDEs.
+- Documented which instruction files each tool should use and clarified that auto-loading behavior varies by product/version; agents must be pointed to the files explicitly when needed.
+- Added copy/paste prompts for first-time project understanding, feature implementation, review-only sessions, and continuing from the worklog.
+- Documented Claude Code's optional /work command, code-only workflows that do not require OCI credentials, local test setup, and the safe development checklist.
+- Added a GitHub Actions status badge to README.md.
+- Corrected the prior worklog note to record that PR #3 was merged after CI passed.
+- Repository description metadata could not be changed through the available GitHub connection actions; a suggested description and topics are provided in the handoff.
+- Tests: documentation-only change; CI validation pending on this branch.
+- No OCI credentials, live tenancy operations, or production deployments were used.
