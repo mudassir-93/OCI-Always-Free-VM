@@ -241,7 +241,13 @@ def _configure_interactively(config_path: Path) -> int:
     if target["boot_volume_vpus_per_gb"] > 120:
         print("Boot volume performance must not exceed 120 VPUs per GB; no changes were saved.")
         return 2
-    target["assign_public_ip"] = _ask_yes_no("Assign a public IPv4 address?", target.get("assign_public_ip") is True)
+    target["assign_public_ip"] = _ask_yes_no(
+        "Assign a public IPv4 address? (required by the current public-subnet workflow)",
+        target.get("assign_public_ip") is True,
+    )
+    if not target["assign_public_ip"]:
+        print("This release requires a public IPv4 address for its supported SSH workflow; no changes were saved.")
+        return 2
     ssh_public_key_path = Path(_ask(
         "Path to your SSH PUBLIC key file (never a private key)",
         str(Path(target.get("ssh_public_key_file", "~/.ssh/id_ed25519.pub")).expanduser()),
