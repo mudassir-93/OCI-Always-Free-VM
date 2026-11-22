@@ -246,6 +246,42 @@ class CliSetupTests(unittest.TestCase):
             )
 
 
+    def test_interactive_configure_rejects_unsupported_boot_volume_performance(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config_path = root / "config.json"
+            ssh_key = root / "id_ed25519.pub"
+            ssh_key.write_text("ssh-ed25519 AAAATEST example", encoding="utf-8")
+
+            def answer(prompt):
+                if "Free Tier" in prompt or "current-month" in prompt or "Always Free Eligible" in prompt:
+                    return "y"
+                if "Tenancy home region" in prompt:
+                    return "us-phoenix-1"
+                if "Availability Domain" in prompt:
+                    return "example-ad"
+                if "Existing VCN OCID" in prompt:
+                    return "ocid1.vcn.example"
+                if "SSH PUBLIC key" in prompt:
+                    return str(ssh_key)
+                if "Pinned Ubuntu" in prompt:
+                    return "ocid1.image.example"
+                if "Boot volume performance" in prompt:
+                    return "20"
+                return ""
+
+            with patch("builtins.input", side_effect=answer), patch(
+                "oci_platform.cli.default_state_dir", return_value=root / "state"
+            ):
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    result = main(["--config", str(config_path), "configure"])
+
+            self.assertEqual(result, 2)
+            self.assertFalse(config_path.exists())
+            self.assertIn("supports exactly 10 VPUs per GB", output.getvalue())
+
+
 class CliEngineIntegrationTests(unittest.TestCase):
     def _valid_config(self, path: Path) -> None:
         config = {
