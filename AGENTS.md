@@ -49,6 +49,7 @@ Maintain a reusable, public, multi-user OCI Always Free A1 capacity monitor and 
 3. Make the smallest coherent change; do not rewrite unrelated modules.
 4. Add or update unit tests for policy and safety changes.
 5. Run:
+   - python oci_free_watch.py --validate-config --config config.json (when a complete local config is available)
    - python -m py_compile oci_free_watch.py
    - python -m unittest discover -s tests -v
 6. Review the diff for hard-coded identifiers, secrets, unsafe defaults, and contradictions.
