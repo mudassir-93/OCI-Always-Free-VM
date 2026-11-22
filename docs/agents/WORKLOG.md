@@ -119,3 +119,15 @@ For each future milestone, append:
 - Next: inspect exact-HEAD CI results, fix any failures, then continue PR #6 review and fresh-machine test planning.
 
 - Correction note: the handoff file was briefly created on the default branch due an omitted branch argument. It was removed, and `main` was force-restored with an expected-head lease to its exact pre-change commit `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`. Verified `main` now points to that original commit. The handoff file exists on `feat/cli-v1-installer-wizard` only.
+
+## 2026-11-22 — Installer failure recovery, regression tests, and CI noise reduction
+
+- Reviewed the eight failed historical Actions runs. The common test failure was `StopIteration` in the configure wizard because a sequence-based mocked input did not include the newer image Always Free confirmation prompt. Prompt-aware test callbacks fixed it; later Python checks passed.
+- Hardened both installers: they now reserve a previously absent destination and remove only their own incomplete install directory when clone, venv creation, pip installation, or initial local setup fails. Pre-existing install directories are refused and preserved.
+- Added `tests/test_installers.py` with Linux integration coverage for cleanup after a partial clone failure and preservation of existing operator data.
+- Changed `.github/workflows/tests.yml` to run pushes only on `main`, while validating feature branches through pull-request events. This removes redundant Python-check runs on every feature-branch push.
+- Corrected workflow matrix interpolation after an intermediate run exposed a literal backslash in the Python version expression.
+- Latest checked branch HEAD: `e6ae13225e646abe9725bd004b4177135483a237`.
+- Python checks passed on Python 3.11 and 3.12 at this HEAD. CLI foundation matrix Linux jobs passed; Windows 3.11 and 3.12 were still in progress at last check.
+- No PR merged; `main` remains at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`. No live OCI calls, VM launch, or production changes.
+- Next: verify both Windows matrix jobs, inspect any errors, then finish the installer/configuration code review. Do not merge either PR without explicit approval.
