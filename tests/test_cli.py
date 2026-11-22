@@ -189,7 +189,7 @@ class CliSetupTests(unittest.TestCase):
                 "y", "", "", "us-phoenix-1", "",
                 "", "", "", "", "", "", "", "y",
                 "example-ad", "ocid1.vcn.example", "", "",
-                "", "", "", "", str(ssh_key), "ocid1.image.example", "y",
+                "", "", "", "", "", str(ssh_key), "ocid1.image.example", "y",
                 "", "", "", "", "", "", "", "", "y",
             ]
             with patch("builtins.input", side_effect=answers), patch(
