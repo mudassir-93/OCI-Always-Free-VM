@@ -27,9 +27,9 @@ Repository: [mudassir-93/OCI-Always-Free-VM](https://github.com/mudassir-93/OCI-
 | Milestone 1 PR | [#5 — cross-platform CLI foundation](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/5), OPEN, DRAFT, not merged |
 | Milestone 2 branch | `feat/cli-v1-installer-wizard` |
 | Milestone 2 PR | [#6 — installer and guided configuration](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/6), OPEN, DRAFT, not merged |
-| Milestone 2 HEAD | `193c1ee35a32fa336d3f2e7e37c7115233a343d8` at last code change |
+| Milestone 2 HEAD | `e6ae13225e646abe9725bd004b4177135483a237` at last checked code change |
 | PR #6 base | `feat/cli-v1-foundation` (stacked on PR #5) |
-| CI at Milestone 2 HEAD | CLI foundation matrix and Python checks both COMPLETED / SUCCESS |
+| CI at latest checked HEAD | Python checks COMPLETED / SUCCESS on Python 3.11 and 3.12; CLI foundation matrix has both Linux jobs successful and Windows jobs still running |
 | Live cloud work | None; no OCI API calls, VM launch, or production deployment changes |
 
 PR #6 depends on PR #5. Keep the dependency explicit. Do not merge #6 into `main` before #5 is accepted. After the user approves merging #5, re-check PR #6's base and retarget it to `main` only with approval. Then rerun all CI before requesting approval to merge #6.
@@ -63,7 +63,11 @@ At the previous verified Milestone 2 HEAD (`1f65967a3bd128bd7e55c1314b219a068abd
 - GitHub Actions `Python checks`: completed successfully.
 - Prior CI logs include offline tests, compile checks, Linux shell syntax, Windows PowerShell parser validation, wheel packaging, and CLI help/version checks.
 - Follow-up review added Windows install-path normalization for relative `OCI_PLATFORM_HOME` values and an offline test proving a target region different from the tenancy home region is rejected without writing config.
-- CI for current code HEAD (`193c1ee35a32fa336d3f2e7e37c7115233a343d8`) is running/queued; do not claim this latest patch is validated until both workflows pass.
+- The earlier wizard-test `StopIteration` failures were caused by a prompt mock that did not answer a newly added image-eligibility question. Prompt-aware callbacks fixed that issue; subsequent Python checks passed.
+- Installer failure handling now reserves a new install directory atomically and removes only that directory if clone, venv, pip, or initial setup fails. Existing install directories are preserved.
+- Added Linux installer integration tests for partial-clone cleanup and preservation of pre-existing install data.
+- Python checks at HEAD `e6ae13225e646abe9725bd004b4177135483a237` passed on Python 3.11 and 3.12. CLI foundation matrix: Linux jobs passed; Windows jobs were still in progress at last check.
+- Python workflow now runs feature-branch checks on pull requests rather than on both push and pull_request events, reducing duplicate notifications.
 - The temporary accidental default-branch handoff commit was removed and `main` was force-restored with a lease to its exact pre-change commit `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`; the default branch now matches its original head again.
 - No real fresh-machine installation has been performed yet.
 - No live OCI integration test has been performed or authorized.
@@ -81,7 +85,7 @@ At the previous verified Milestone 2 HEAD (`1f65967a3bd128bd7e55c1314b219a068abd
 ## Exact next actions
 
 1. Re-read `AGENTS.md`, `docs/agents/PROJECT_MEMORY.md`, this file, and the latest PR #5/#6 status.
-2. Re-check CI for code HEAD `193c1ee35a32fa336d3f2e7e37c7115233a343d8`; inspect any failures. Review the full PR #6 diff for safety, platform compatibility, config validation, installer failure handling, and test coverage. Do not merge.
+2. Re-check the CLI foundation matrix for HEAD `e6ae13225e646abe9725bd004b4177135483a237`, especially both Windows jobs. Review PowerShell cleanup behavior and the full PR #6 diff. Do not merge.
 3. Add tests/fixes for any concrete findings on `feat/cli-v1-installer-wizard`; update this file and `docs/agents/WORKLOG.md` after meaningful changes.
 4. Ask the user to review/approve PR #5 before merging it. Do not merge autonomously.
 5. After #5 is approved and merged, with approval retarget #6 to `main`, rerun CI, and ask for #6 approval.
