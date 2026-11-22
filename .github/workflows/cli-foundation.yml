@@ -58,6 +58,11 @@ jobs:
             exit 1
           }
 
+      - name: Run Windows installer safety integration tests
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./tests/test_installers_windows.ps1
+
       - name: Run offline tests
         run: python -m unittest discover -s tests -v
 
