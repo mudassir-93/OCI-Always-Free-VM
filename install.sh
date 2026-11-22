@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 REPOSITORY="https://github.com/mudassir-93/OCI-Always-Free-VM.git"
-INSTALL_DIR="\${OCI_PLATFORM_HOME:-$HOME/oci-automation-platform}"
+INSTALL_DIR="${OCI_PLATFORM_HOME:-$HOME/oci-automation-platform}"
 
 echo "OCI Automation Platform installer"
 echo "This installs local CLI files only. It does not contact your OCI tenancy or create cloud resources."
@@ -12,8 +12,8 @@ PYTHON=""
 for candidate in python3.12 python3.11 python3; do
   if command -v "$candidate" >/dev/null 2>&1; then
     version="$("$candidate" -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
-    major="\${version%%.*}"
-    minor="\${version#*.}"
+    major="${version%%.*}"
+    minor="${version#*.}"
     if (( major == 3 && minor >= 11 )); then
       PYTHON="$candidate"
       break
