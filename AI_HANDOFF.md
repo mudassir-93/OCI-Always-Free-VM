@@ -27,7 +27,7 @@ Repository: [mudassir-93/OCI-Always-Free-VM](https://github.com/mudassir-93/OCI-
 | Milestone 1 PR | [#5 — cross-platform CLI foundation](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/5), OPEN, DRAFT, not merged |
 | Milestone 2 branch | `feat/cli-v1-installer-wizard` |
 | Milestone 2 PR | [#6 — installer and guided configuration](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/6), OPEN, DRAFT, not merged |
-| Milestone 2 HEAD | `1f65967a3bd128bd7e55c1314b219a068abd430d` at last check |
+| Milestone 2 HEAD | `193c1ee35a32fa336d3f2e7e37c7115233a343d8` at last code change |
 | PR #6 base | `feat/cli-v1-foundation` (stacked on PR #5) |
 | CI at Milestone 2 HEAD | CLI foundation matrix and Python checks both COMPLETED / SUCCESS |
 | Live cloud work | None; no OCI API calls, VM launch, or production deployment changes |
@@ -57,11 +57,13 @@ PR #6 depends on PR #5. Keep the dependency explicit. Do not merge #6 into `main
 
 ## Validation evidence
 
-At the latest checked Milestone 2 HEAD (`1f65967a3bd128bd7e55c1314b219a068abd430d`):
+At the previous verified Milestone 2 HEAD (`1f65967a3bd128bd7e55c1314b219a068abd430d`):
 
 - GitHub Actions `CLI foundation`: completed successfully (Windows/Linux × Python 3.11/3.12).
 - GitHub Actions `Python checks`: completed successfully.
 - Prior CI logs include offline tests, compile checks, Linux shell syntax, Windows PowerShell parser validation, wheel packaging, and CLI help/version checks.
+- Follow-up review added Windows install-path normalization for relative `OCI_PLATFORM_HOME` values and an offline test proving a target region different from the tenancy home region is rejected without writing config.
+- CI for current code HEAD (`193c1ee35a32fa336d3f2e7e37c7115233a343d8`) is running/queued; do not claim this latest patch is validated until both workflows pass.
 - No real fresh-machine installation has been performed yet.
 - No live OCI integration test has been performed or authorized.
 - Do not describe installer as production-validated until a fresh Windows and Linux workstation test has passed.
@@ -78,7 +80,7 @@ At the latest checked Milestone 2 HEAD (`1f65967a3bd128bd7e55c1314b219a068abd430
 ## Exact next actions
 
 1. Re-read `AGENTS.md`, `docs/agents/PROJECT_MEMORY.md`, this file, and the latest PR #5/#6 status.
-2. Review the full PR #6 diff for safety, platform compatibility, config validation, installer failure handling, and test coverage. Do not merge.
+2. Re-check CI for code HEAD `193c1ee35a32fa336d3f2e7e37c7115233a343d8`; inspect any failures. Review the full PR #6 diff for safety, platform compatibility, config validation, installer failure handling, and test coverage. Do not merge.
 3. Add tests/fixes for any concrete findings on `feat/cli-v1-installer-wizard`; update this file and `docs/agents/WORKLOG.md` after meaningful changes.
 4. Ask the user to review/approve PR #5 before merging it. Do not merge autonomously.
 5. After #5 is approved and merged, with approval retarget #6 to `main`, rerun CI, and ask for #6 approval.
