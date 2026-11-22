@@ -123,3 +123,14 @@ Before ending a work session:
 - Confirmed the current gap: Windows installer has PowerShell parser validation but no end-to-end automated Windows execution test; the integration cleanup/preservation test is POSIX-only.
 - No fresh workstation install has been performed. Do not call the installer release-ready until both Windows and Linux manual fresh-install checks pass.
 - Next coding task: add focused wizard tests for timestamped backup behavior and for clearing pre-existing `creation_enabled` / `creation_confirmation` values; run exact-HEAD CI and keep PRs unmerged pending operator approval.
+
+
+## Latest continuation update — installer recovery regression (2026-11-22)
+
+- Added a POSIX integration test for virtual-environment creation failure after the installer has reserved the new destination; it verifies cleanup removes only the newly-created incomplete directory.
+- The initial fixture had escaped newlines in the generated shell script. CI exposed the fixture issue; corrected it in the next commit. Do not treat the first failed run as an installer runtime defect.
+- Current branch HEAD: `44040482ddbf711ce843caad3351f27b3863a9c4`.
+- Python checks passed on Python 3.11 and 3.12. CLI foundation matrix: Ubuntu Python 3.11 and 3.12 passed; Windows Python 3.11 and 3.12 were still running at last check.
+- Existing tests already cover config backup creation and forced disarming of previously armed VM creation settings.
+- `main` remains at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`; PR #5/#6 remain open/draft; no live OCI, VM launch, or production changes.
+- Next: verify Windows matrix completion, then arrange real fresh-install checks on Windows and Linux after both PRs are approved and merged.
