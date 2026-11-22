@@ -1,37 +1,89 @@
-# OCI Always Free A1 capacity monitor
+# OCI Always Free A1 VM Automation
 
-Lightweight Python monitor for the user's OCI Dubai tenancy. It uses the official OCI Python SDK and has **read-only mode by default**.
+A lightweight Python application for monitoring OCI Ampere A1 host capacity and, only after explicit operator approval, requesting one configured A1 VM. It uses the official OCI Python SDK.
 
-## Locked target
+**Default behavior is read-only.** The project never creates or modifies VCNs, subnets, gateways, route tables, security lists, NSGs, reserved IPs, or existing compute instances.
 
-- Home region: `me-dubai-1`
-- Availability domain: `svhq:ME-DUBAI-1-AD-1`
-- Shape: `VM.Standard.A1.Flex`
-- CPU: **2 OCPU**
-- Memory: **4 GB**
-- Image: Canonical Ubuntu 24.04 (AArch64-compatible image returned for A1)
-- Boot volume: **150 GB** at standard 10 VPU/GB
-- Public IPv4: enabled on an existing public subnet
-- Existing VCN: the supplied `free` VCN OCID
-- No automatic VCN/subnet/gateway/route/security-rule creation or changes
+## Capabilities
 
-## Important billing boundary
+- OCI API signing-key authentication using a local OCI SDK profile.
+- Home-region and availability-domain validation.
+- Inspection of an existing VCN and public subnet, including the default route to an enabled Internet Gateway.
+- Compatible image discovery for the configured OS, version, and A1 shape.
+- Live standard A1 CPU and memory quota checks.
+- Inventory of A1 instances and boot/block volumes across accessible compartments.
+- Configurable monthly OCPU-hour and GB-hour budget checks.
+- SSH public-key, image-confirmation, usage-review, and duplicate-instance safeguards.
+- OCI capacity reports with exponential retry/backoff and jitter.
+- Optional Telegram notifications through environment variables.
+- Local state and OCI retry-token safeguards to reduce duplicate launch risk.
 
-The program only permits the configured A1 shape in the configured tenancy home region, requires the user's explicit Free Tier attestation, checks remaining A1 OCPU/memory through the OCI Limits API, sums existing boot and block volumes across accessible compartments and availability domains, and caps the combined volume target at 200 GB. It also checks the 1,500 OCPU-hour / 9,000 GB-hour monthly allowance against a 31-day month.
+## Safety scope
 
-**The OCI control-plane APIs do not provide this program with a reliable, definitive switch saying that the billing account is still Free Tier and has not been upgraded.** The `account_type` and `free_tier_only_confirmed` settings are the user's assertion. The program never upgrades the account and never launches shapes other than A1, but the operator must keep the account Free Tier and check Billing & Cost Management. If OCI cannot verify the live limits or storage, creation is blocked.
+This release intentionally supports only VM.Standard.A1.Flex in the tenancy home region, using an existing VCN and public subnet with public IPv4. The target OCPU, memory, boot-volume size, OS/version, region, availability domain, VCN, subnet, image, and SSH public-key path are configured locally by each operator. The sample configuration is a starting example, not a tenancy-specific preset.
 
-This project does not create a cost reservation. A capacity report is a point-in-time report and does not reserve a host; capacity can disappear before launch.
+The application does not:
+- Upgrade an OCI account or change its billing plan.
+- Launch non-A1 shapes.
+- Create or alter network resources or ingress rules.
+- Terminate, resize, or modify existing instances.
+- Guarantee Always Free eligibility, zero billing, host capacity, or a successful launch.
+- Run directly on Windows. Run it on Linux; Windows can be used for editing and SSH access.
 
-## 1. Install on Ubuntu VPS
+The program requires an explicit local Free Tier attestation. OCI APIs used by this application do not provide a definitive billing-plan status. Keep your actual account status and Billing & Cost Management under manual review. The app's safeguards cannot prevent charges caused by account upgrades, unrelated resources, changed policies, or incorrect operator input.
 
-Copy this directory to the EC2 VPS, then:
+## OCI Always Free reference
 
-```bash
-sudo mkdir -p /opt/oci-free-instance-automation
-sudo chown -R ubuntu:ubuntu /opt/oci-free-instance-automation
-# Copy/extract the project files into that directory first.
-cd /opt/oci-free-instance-automation
+Oracle's current documentation describes the A1 Always Free allowance for Free Tier tenancies as up to 2 OCPUs and 12 GB memory, with 1,500 OCPU-hours and 9,000 GB-hours per month. It also documents 200 GB combined boot-volume and block-volume storage in the home region. These limits and eligibility rules may change. Verify the current terms and your own live tenancy limits before arming creation.
+
+- Oracle Always Free resources: https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm
+- Oracle A1 compute: https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm
+
+The example config uses conservative policy caps. The live Limits API check is still required. Include usage from other A1 instances in the current month and all active boot/block volumes in accessible compartments.
+
+## Repository layout
+
+~~~text
+.
+├── AGENTS.md
+├── CLAUDE.md
+├── GEMINI.md
+├── README.md
+├── config.example.json
+├── oci_free_watch.py
+├── requirements.txt
+├── systemd/oci-free-watch.service
+├── tests/test_policy.py
+├── docs/
+│   ├── DEPLOY_EC2.md
+│   └── agents/
+│       ├── PROJECT_MEMORY.md
+│       ├── START_PROMPT.md
+│       └── WORKLOG.md
+└── .github/
+    ├── copilot-instructions.md
+    └── workflows/tests.yml
+~~~
+
+## Requirements
+
+- Linux host; Ubuntu is recommended.
+- Python 3.11 or newer.
+- Network access to OCI APIs.
+- OCI API signing-key authentication.
+- An OCI identity with least-privilege read permissions; launch mode requires additional compute/VNIC/volume permissions.
+- An existing VCN, public subnet, Internet Gateway route, and SSH public key.
+- No Docker, Node.js, Redis, PostgreSQL, or database service.
+
+## Quick start
+
+### 1. Clone and install
+
+Replace the repository placeholder with your fork or clone URL:
+
+~~~bash
+git clone https://github.com/OWNER/REPOSITORY.git
+cd REPOSITORY
 python3 -m venv .venv
 . .venv/bin/activate
 python -m pip install --upgrade pip
@@ -39,140 +91,167 @@ python -m pip install -r requirements.txt
 cp config.example.json config.json
 chmod 600 config.json
 mkdir -p logs state
-```
+chmod 700 logs state
+~~~
 
-Python 3.11+ is recommended. The project needs only the OCI SDK beyond the Python standard library.
+### 2. Configure OCI API authentication
 
-## 2. OCI API signing-key setup
+Create an OCI API signing key and upload only the public key to OCI Console. Keep the private key outside the repository. The SDK config normally lives at ~/.oci/config:
 
-Use the dedicated OCI API key profile created for this automation. Keep the private key only on the VPS. In `~/.oci/config`, the profile should contain `user`, `tenancy`, `fingerprint`, `region`, and `key_file`.
+~~~ini
+[DEFAULT]
+user=YOUR_USER_OCID
+tenancy=YOUR_TENANCY_OCID
+fingerprint=YOUR_KEY_FINGERPRINT
+region=YOUR_HOME_REGION
+key_file=/absolute/path/to/oci_api_key.pem
+~~~
 
-```bash
-mkdir -p ~/.oci
+Protect the directory, config, and private key:
+
+~~~bash
 chmod 700 ~/.oci
-# Generate once only if you have not already created a key for this OCI user:
-openssl genrsa -out ~/.oci/oci_api_key.pem 2048
-openssl rsa -pubout -in ~/.oci/oci_api_key.pem -out ~/.oci/oci_api_key_public.pem
-chmod 600 ~/.oci/oci_api_key.pem
-# After creating ~/.oci/config from Oracle's config preview:
 chmod 600 ~/.oci/config
-```
+chmod 600 /absolute/path/to/oci_api_key.pem
+~~~
 
-Upload only `oci_api_key_public.pem` in OCI Console → Profile → User Settings → API Keys. Add Oracle's fingerprint and the OCIDs to `~/.oci/config` using the values from Oracle's configuration preview. Never copy the private key into this project or send it in chat.
+Never commit or paste private keys, OCI config, OCIDs, Telegram tokens, or local config.json.
 
-## 3. Fill application config
+### 3. Configure the local application file
 
-Edit `config.json`:
+Edit config.json. The example is intentionally account-neutral.
 
-1. Keep the supplied Dubai region, AD, and VCN OCID. Leave `subnet_ocid` blank only if the VCN has exactly one public subnet; otherwise copy the subnet OCID you just created from OCI Console.
-2. Create an SSH key pair on the VPS if you do not already have one, and set `ssh_public_key_file` to the `.pub` file. The private half must remain private.
-3. Run `--audit`. It reports the newest compatible Canonical Ubuntu 24.04 image candidate and its OCID.
-4. In OCI Console, open that exact image and verify it is labelled **Always Free Eligible**. Then copy its OCID to `target.image_ocid` and set `target.image_console_always_free_confirmed` to `true`.
-5. Keep `creation_enabled` false. The image confirmation flag is an operator attestation because the OCI SDK Image model does not expose that Console label as a machine-readable property.
+| Field | Operator action |
+|---|---|
+| oci.config_file / profile | Set the local OCI SDK config path and profile |
+| account.account_type | Keep FREE_TIER for this strict workflow |
+| account.free_tier_only_confirmed | Set true only after confirming your account is still Free Tier |
+| account.home_region | Enter your tenancy's actual home region |
+| account.a1_free_max_ocpu / a1_free_max_memory_gb | Set local policy caps; the live Limits API is checked separately |
+| account.combined_free_volume_gb | Enter your verified combined boot + block storage allowance |
+| account.monthly_a1_ocpu_hours / monthly_a1_memory_gb_hours | Enter the monthly budgets you have verified |
+| account.other_monthly_a1_*_hours | Include usage already consumed by other A1 instances this month |
+| account.current_month_usage_reviewed | Set true only after reviewing current-month usage |
+| target.region | Must equal the tenancy home region |
+| target.availability_domain | Choose an AD in that region |
+| target.vcn_ocid / subnet_ocid | Enter existing network resource OCIDs |
+| target.display_name | Choose a unique instance name |
+| target.ocpus / memory_gb | Choose a configuration within your policy and live quota |
+| target.boot_volume_size_gb | At least 50 GB and within remaining combined storage |
+| target.operating_system / operating_system_version | Select the desired compatible image filter |
+| target.ssh_public_key_file | Absolute path to your SSH public key, never the private key |
+| target.image_ocid | Pin the exact image after reviewing the audit candidate |
+| target.image_console_always_free_confirmed | Set true only after checking the exact image's Always Free Eligible label in OCI Console |
 
-Example SSH key (only if you need a separate key):
+This release requires an existing public subnet and public IPv4. It does not create a VCN, subnet, gateway, route, or SSH ingress rule. Configure ingress securely yourself.
 
-```bash
-ssh-keygen -t ed25519 -f ~/.ssh/oci_free_vm -C oci-free-vm
-chmod 600 ~/.ssh/oci_free_vm
-chmod 644 ~/.ssh/oci_free_vm.pub
-```
+### 4. Audit and test capacity
 
-## 4. Read-only checks
-
-Run one read-only audit:
-
-```bash
-. .venv/bin/activate
+~~~bash
 python oci_free_watch.py --audit
-```
-
-Run one audit plus one capacity check:
-
-```bash
 python oci_free_watch.py --once
-```
-
-Continuous read-only monitoring:
-
-```bash
 python oci_free_watch.py --monitor
-```
+~~~
 
-`--audit` and `--once` do not launch an instance, even if the configuration is later changed. Review the logs and fix any missing read permissions or network configuration before moving on.
+- --audit performs a read-only audit and does not submit a capacity report or launch request.
+- --once performs one audit and capacity check, but never launches.
+- --monitor continuously monitors in read-only mode unless separately armed.
 
-## 5. IAM permissions
+The audit discovers a compatible image candidate. Pin its exact OCID locally, then manually confirm that exact image is labelled Always Free Eligible in OCI Console. The OCI SDK does not expose this Console label as a reliable machine-readable property.
 
-Start with read-only access for the automation user/group. It needs permission to inspect tenancy/compartments, read compute instances and images, read VCN/subnet/route-table/Internet Gateway resources, read boot/block volumes, read region subscriptions, and query resource availability/limits. OCI's exact policy verbs can vary by operation; use Oracle's Core Services and Limits policy references and grant only what is needed.
+### 5. Creation mode — explicit and optional
 
-For capacity reports, ensure the identity is authorized for the capacity-report operation. Do not grant broad tenancy administrator privileges merely to make the script pass. The launch phase needs additional create/attach permissions and should be added only after the read-only audit is clean.
+Do not arm creation until you have reviewed account status, billing, current-month usage, image eligibility, IAM permissions, storage, network, and a successful audit.
 
-## 6. Creation guard (do not enable during first tests)
+All three independent switches are required:
+1. mode.creation_enabled = true in local config.json.
+2. mode.creation_confirmation = LAUNCH_ONE_ALWAYS_FREE_INSTANCE.
+3. Start the process with --enable-create.
 
-Creation is disabled unless **all** conditions below are true:
+Example foreground command after deliberate local arming:
 
-- `mode.creation_enabled` is set to `true` in `config.json`.
-- `mode.creation_confirmation` is set to exactly `LAUNCH_ONE_ALWAYS_FREE_INSTANCE`.
-- The process is started with `--enable-create`.
-- The home-region, A1 shape/CPU/RAM, live quota, total storage, subnet route, SSH key, monthly allowance and duplicate checks all pass.
-- The exact Ubuntu image OCID is pinned in `target.image_ocid`, and you manually confirm its Console **Always Free Eligible** label by setting `target.image_console_always_free_confirmed=true`.
-
-Only then can the script submit exactly one A1 launch request. It writes a pending/idempotency record before calling LaunchInstance, adopts an existing matching instance rather than creating a duplicate, and never terminates or modifies existing resources.
-
-To arm manually after reviewing a successful audit:
-
-```bash
-# Edit config.json: creation_enabled=true and the exact confirmation phrase.
+~~~bash
 python oci_free_watch.py --monitor --enable-create
-```
+~~~
 
-The supplied systemd unit deliberately does **not** pass `--enable-create`. Do not change it unless you intentionally want unattended launch attempts after completing the review.
+The supplied systemd unit is read-only and intentionally omits --enable-create. For unattended launch, use a local systemd drop-in override; do not commit an armed unit or account-specific configuration.
 
-## 7. Optional Telegram notifications
+Before launch, the program re-runs preflight, writes a pending/idempotency record, uses an OCI retry token, and refuses duplicate or ambiguous launches. These safeguards reduce risk but cannot guarantee exactly-once behavior across every network/API failure. Ambiguous outcomes stop for manual reconciliation.
 
-Set these environment variables in `/etc/oci-free-watch.env` (not in source code or Git):
+### 6. systemd
 
-```bash
-sudo install -m 600 /dev/null /etc/oci-free-watch.env
-sudo nano /etc/oci-free-watch.env
-```
+Review systemd/oci-free-watch.service. Its example assumes:
+- Application directory: /opt/oci-free-instance-automation
+- Linux user/group: ubuntu
+- Virtual environment: .venv
 
-Add the following lines, save, then restart the service after it is installed:
+Customize the user, group, paths, and writable directories for your host before installing:
 
-```ini
-TELEGRAM_BOT_TOKEN=REPLACE_LOCALLY
-TELEGRAM_CHAT_ID=your_chat_id
-```
-
-The systemd unit loads this file. Keep it root-readable only. Notifications are optional; the monitor continues if Telegram is unavailable.
-
-## 8. systemd (read-only by default)
-
-After reviewing the unit paths and confirming the Linux account is `ubuntu`:
-
-```bash
+~~~bash
 sudo cp systemd/oci-free-watch.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now oci-free-watch
-sudo systemctl status oci-free-watch
-journalctl -u oci-free-watch -f
-```
+sudo systemctl status oci-free-watch --no-pager
+sudo journalctl -u oci-free-watch -f
+~~~
 
-The unit writes only to this project directory's `logs/` and `state/` directories and does not edit SSH, firewall, Tailscale, Docker, or other AWS system configuration.
+Stop the service with sudo systemctl disable --now oci-free-watch. Do not add --enable-create unless unattended creation is explicitly intended and approved.
+
+### 7. Optional Telegram notifications
+
+Store secrets outside the repository in a root-readable environment file such as /etc/oci-free-watch.env:
+
+~~~ini
+TELEGRAM_BOT_TOKEN=YOUR_BOT_TOKEN
+TELEGRAM_CHAT_ID=YOUR_CHAT_ID
+~~~
+
+The systemd unit loads this file. Never place notification credentials in source code or Git.
+
+## CLI reference
+
+| Command | Effect |
+|---|---|
+| python oci_free_watch.py --validate-config | Validate local configuration and policy offline; no OCI API call |
+| python oci_free_watch.py --audit | One read-only OCI audit |
+| python oci_free_watch.py --once | One audit and capacity check; never launches |
+| python oci_free_watch.py --monitor | Continuous read-only monitoring |
+| python oci_free_watch.py --monitor --enable-create | Creation-capable monitoring only when both local config confirmations are also set |
+| python oci_free_watch.py --config /path/to/config.json --audit | Use an alternate local configuration file |
 
 ## Retry policy
 
-Default capacity poll is 20 minutes. Backoff is exponential and capped at 180 minutes, with ±15% jitter. HTTP 429 and 5xx are treated as transient; a `Retry-After` header is observed where present. Authentication, authorization, invalid configuration, quota, and other non-transient 4xx errors stop the process for manual intervention. There is no tight retry loop.
+Default polling is 20 minutes. Exponential backoff is capped at 180 minutes with ±15% jitter. Throttling and transient server errors are retried; Retry-After is observed when available. Authentication, authorization, invalid configuration, quota, and other non-transient errors stop for manual intervention.
 
-## Limitations / operator checks
+A capacity report is advisory and does not reserve a host. Capacity can disappear before launch.
 
-- Capacity reports are advisory; they do not reserve capacity.
-- The program cannot verify a billing plan upgrade status through the OCI APIs used here; keep the tenancy on Free Tier and review Billing & Cost Management. The `account_type` and confirmation flags are operator attestations, not proof from Oracle's billing backend.
-- Monthly A1 usage may include prior usage from earlier instances in the same billing month. `other_monthly_a1_ocpu_hours` and `other_monthly_a1_memory_gb_hours` must reflect any such usage; keep them at zero only if that is accurate.
-- OCI Limits API must expose the A1 CPU and memory remaining values to the automation identity for creation to be enabled. If not, the script intentionally blocks launch.
-- The SDK can enumerate Ubuntu 24.04 images compatible with A1, but it does not expose the Console's Always Free Eligible label. Pin the image OCID only after verifying that label in Console; the script blocks launch without this manual confirmation.
-- Public SSH reachability also requires a suitable ingress rule on the subnet security list or an NSG. The app does not create or change those rules; restrict SSH to your IP or use Tailscale.
+## Tests
 
-## Deploy to the existing AWS EC2 VPS
+Run without OCI credentials:
 
-See [`docs/DEPLOY_EC2.md`](docs/DEPLOY_EC2.md). The repository contains no OCI credentials or private keys. `config.json`, logs, and runtime state stay on EC2 and are excluded by `.gitignore`.
+~~~bash
+python -m py_compile oci_free_watch.py
+python -m unittest discover -s tests -v
+~~~
+
+GitHub Actions runs the checks on pushes and pull requests.
+
+## Security checklist
+
+- Keep config.json local with restrictive permissions.
+- Keep OCI SDK config and private keys outside Git.
+- Use least-privilege OCI IAM policies.
+- Never commit SSH private keys or public-key identity files.
+- Keep Telegram secrets in an external environment file.
+- Manually verify the image's Always Free Eligible label.
+- Manually review account billing and current-month usage.
+- Keep creation disabled until explicitly approved.
+- Do not publish logs or runtime state.
+
+## AI coding agents
+
+Read AGENTS.md and docs/agents/PROJECT_MEMORY.md before making changes. Use docs/agents/START_PROMPT.md as a reusable starting prompt. AGENTS.md is the shared project instruction source; CLAUDE.md, GEMINI.md, and .github/copilot-instructions.md provide tool-specific entry points.
+
+## License
+
+No license has been selected. Until a LICENSE file is added, do not assume the repository grants permission to redistribute or reuse the code.
