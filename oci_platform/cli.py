@@ -103,6 +103,23 @@ def _ask_yes_no(prompt: str, default: bool = False) -> bool:
         print("Please answer yes or no.")
 
 
+def _ask_number(prompt: str, default: str, *, integer: bool = False, minimum: float = 0) -> int | float:
+    while True:
+        raw = _ask(prompt, default, required=True)
+        try:
+            value = float(raw)
+            if not value >= minimum:
+                raise ValueError
+            if integer:
+                if not value.is_integer():
+                    raise ValueError
+                return int(value)
+            return value
+        except ValueError:
+            qualifier = f"whole number >= {minimum:g}" if integer else f"number >= {minimum:g}"
+            print(f"Enter a {qualifier}.")
+
+
 def _configure_interactively(config_path: Path) -> int:
     """Collect local settings only. Never contacts OCI or arms instance creation."""
     config = read_config(config_path) if config_path.exists() else json.loads(
@@ -143,6 +160,28 @@ def _configure_interactively(config_path: Path) -> int:
     account["free_tier_only_confirmed"] = True
     account["allow_paid_resources"] = False
     account["home_region"] = home_region
+    account["a1_free_max_ocpu"] = _ask_number(
+        "Verified A1 OCPU policy cap", str(account.get("a1_free_max_ocpu", 2))
+    )
+    account["a1_free_max_memory_gb"] = _ask_number(
+        "Verified A1 memory policy cap in GB", str(account.get("a1_free_max_memory_gb", 12))
+    )
+    account["combined_free_volume_gb"] = _ask_number(
+        "Verified combined boot + block volume allowance in GB",
+        str(account.get("combined_free_volume_gb", 200)), integer=True, minimum=1,
+    )
+    account["monthly_a1_ocpu_hours"] = _ask_number(
+        "Monthly A1 OCPU-hour budget", str(account.get("monthly_a1_ocpu_hours", 1500))
+    )
+    account["monthly_a1_memory_gb_hours"] = _ask_number(
+        "Monthly A1 GB-hour budget", str(account.get("monthly_a1_memory_gb_hours", 9000))
+    )
+    account["other_monthly_a1_ocpu_hours"] = _ask_number(
+        "A1 OCPU-hours already consumed this month", str(account.get("other_monthly_a1_ocpu_hours", 0))
+    )
+    account["other_monthly_a1_memory_gb_hours"] = _ask_number(
+        "A1 GB-hours already consumed this month", str(account.get("other_monthly_a1_memory_gb_hours", 0))
+    )
     account["current_month_usage_reviewed"] = _ask_yes_no(
         "Have you reviewed current-month A1 compute and storage usage in OCI Cost Analysis?",
         account.get("current_month_usage_reviewed") is True,
@@ -185,7 +224,10 @@ def _configure_interactively(config_path: Path) -> int:
     target["shape"] = "VM.Standard.A1.Flex"
     target["operating_system"] = "Canonical Ubuntu"
     target["operating_system_version"] = "24.04"
-    target["boot_volume_vpus_per_gb"] = int(target.get("boot_volume_vpus_per_gb", 10))
+    target["boot_volume_vpus_per_gb"] = _ask_number(
+        "Boot volume performance in VPUs per GB", str(target.get("boot_volume_vpus_per_gb", 10)),
+        integer=True, minimum=10,
+    )
     target["assign_public_ip"] = _ask_yes_no("Assign a public IPv4 address?", target.get("assign_public_ip") is True)
     target["ssh_public_key_file"] = str(Path(_ask(
         "Path to your SSH PUBLIC key file (never a private key)",
@@ -197,6 +239,37 @@ def _configure_interactively(config_path: Path) -> int:
         "Have you personally verified this exact image is marked 'Always Free Eligible' in OCI Console?",
         target.get("image_console_always_free_confirmed") is True,
     )
+
+    mode["capacity_poll_minutes"] = _ask_number(
+        "Capacity polling interval in minutes", str(mode.get("capacity_poll_minutes", 20)),
+        integer=True, minimum=1,
+    )
+    mode["max_backoff_minutes"] = _ask_number(
+        "Maximum retry backoff in minutes", str(mode.get("max_backoff_minutes", 180)),
+        integer=True, minimum=1,
+    )
+    mode["max_attempts"] = _ask_number(
+        "Maximum monitoring attempts (0 means unlimited)", str(mode.get("max_attempts", 0)),
+        integer=True, minimum=0,
+    )
+    mode["instance_wait_timeout_minutes"] = _ask_number(
+        "Instance readiness timeout in minutes", str(mode.get("instance_wait_timeout_minutes", 40)),
+        integer=True, minimum=1,
+    )
+    mode["instance_poll_seconds"] = _ask_number(
+        "Instance readiness poll interval in seconds", str(mode.get("instance_poll_seconds", 20)),
+        integer=True, minimum=1,
+    )
+
+    paths = config.setdefault("paths", {})
+    paths["log_file"] = str(Path(_ask("Log file path", str(paths.get("log_file", "")))).expanduser())
+    paths["state_file"] = str(Path(_ask("State file path", str(paths.get("state_file", "")))).expanduser())
+    logging = config.setdefault("logging", {})
+    log_level = _ask("Log level (DEBUG/INFO/WARNING/ERROR)", str(logging.get("level", "INFO"))).upper()
+    if log_level not in {"DEBUG", "INFO", "WARNING", "ERROR"}:
+        print("Invalid log level; no changes were saved.")
+        return 2
+    logging["level"] = log_level
 
     # This wizard must never arm a real cloud launch.
     mode["creation_enabled"] = False
@@ -219,6 +292,8 @@ def _configure_interactively(config_path: Path) -> int:
         stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         backup_path = config_path.with_name(f"{config_path.name}.{stamp}.bak")
         shutil.copy2(config_path, backup_path)
+        if os.name == "posix":
+            backup_path.chmod(0o600)
     write_config(config_path, config)
     print(f"Saved configuration: {config_path}")
     if backup_path:
