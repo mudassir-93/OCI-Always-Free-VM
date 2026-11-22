@@ -137,27 +137,36 @@ def check_static_free_tier_policy(account: dict[str, Any], target: dict[str, Any
         raise GuardError("Config must explicitly confirm account_type=FREE_TIER and free_tier_only_confirmed=true.")
     if account.get("allow_paid_resources", False) is not False:
         raise GuardError("allow_paid_resources must be false.")
-    if target.get("region") != account.get("home_region"):
-        raise GuardError("Always Free compute is restricted to the tenancy home region. Target region != home_region.")
+
+    home_region = str(account.get("home_region", "")).strip()
+    target_region = str(target.get("region", "")).strip()
+    if not home_region or not target_region:
+        raise GuardError("Set account.home_region and target.region using your OCI tenancy's home region.")
+    if target_region != home_region:
+        raise GuardError("Always Free A1 compute must be launched in the tenancy home region.")
     if target.get("shape") != "VM.Standard.A1.Flex":
         raise GuardError("Safety policy permits only VM.Standard.A1.Flex.")
-    ocpus = float(target.get("ocpus", 0))
-    memory = float(target.get("memory_gb", 0))
-    boot_gb = int(target.get("boot_volume_size_gb", 0))
-    if ocpus != 2 or memory != 4:
-        raise GuardError("This project is locked to exactly 2 OCPU and 4 GB RAM.")
-    if boot_gb != 150:
-        raise GuardError("This project is locked to exactly a 150 GB boot volume.")
-    if ocpus > float(account.get("a1_free_max_ocpu", 2)):
-        raise GuardError("Requested OCPU exceeds the configured Always Free A1 limit.")
-    if memory > float(account.get("a1_free_max_memory_gb", 12)):
-        raise GuardError("Requested memory exceeds the configured Always Free A1 limit.")
-    if boot_gb > int(account.get("combined_free_volume_gb", 200)):
-        raise GuardError("Boot volume exceeds the documented combined Always Free volume allowance.")
-    if target.get("operating_system") != "Canonical Ubuntu" or str(target.get("operating_system_version")) != "24.04":
-        raise GuardError("Only Canonical Ubuntu 24.04 platform images are permitted.")
+
+    try:
+        ocpus = float(target.get("ocpus", 0))
+        memory = float(target.get("memory_gb", 0))
+        boot_gb = int(target.get("boot_volume_size_gb", 0))
+        max_ocpus = float(account.get("a1_free_max_ocpu", 2))
+        max_memory = float(account.get("a1_free_max_memory_gb", 12))
+        max_storage = int(account.get("combined_free_volume_gb", 200))
+    except (TypeError, ValueError) as exc:
+        raise GuardError("OCPU, memory, boot volume, and account limits must be valid numbers.") from exc
+
+    if ocpus <= 0 or ocpus > max_ocpus:
+        raise GuardError(f"Requested OCPU must be greater than zero and no more than the configured A1 limit ({max_ocpus:g}).")
+    if memory <= 0 or memory > max_memory:
+        raise GuardError(f"Requested memory must be greater than zero and no more than the configured A1 limit ({max_memory:g} GB).")
+    if boot_gb < 50 or boot_gb > max_storage:
+        raise GuardError(f"Boot volume must be at least 50 GB and no more than the configured combined storage limit ({max_storage} GB).")
+    if not str(target.get("operating_system", "")).strip() or not str(target.get("operating_system_version", "")).strip():
+        raise GuardError("Set a supported operating_system and operating_system_version.")
     if target.get("assign_public_ip") is not True:
-        raise GuardError("Target requires a public IPv4 address; assign_public_ip must be true.")
+        raise GuardError("This release requires a public IPv4 address and an existing public subnet.")
     if target.get("boot_volume_vpus_per_gb", 10) != 10:
         raise GuardError("Only the standard 10-VPU/GB boot volume performance setting is permitted by this guard.")
 
@@ -239,14 +248,14 @@ def discover_image(compute: Any, tenancy_id: str, target: dict[str, Any]) -> Any
             and i.operating_system == target["operating_system"]
             and str(i.operating_system_version) == str(target["operating_system_version"])]
     if not good:
-        raise GuardError("No AVAILABLE Canonical Ubuntu 24.04 image compatible with VM.Standard.A1.Flex was returned by OCI.")
+        raise GuardError(f"No AVAILABLE {target['operating_system']} {target['operating_system_version']} image compatible with {target['shape']} was returned by OCI.")
     # OCI's SDK Image model does not expose the Console's 'Always Free Eligible' label.
     # If an OCID is pinned, use only that exact image; otherwise return a candidate for audit.
     pinned_id = str(target.get("image_ocid", "")).strip()
     if pinned_id:
         pinned = [image for image in good if image.id == pinned_id]
         if not pinned:
-            raise GuardError("Configured image_ocid was not found among AVAILABLE Canonical Ubuntu 24.04 images compatible with A1 in this tenancy/region.")
+            raise GuardError(f"Configured image_ocid was not found among AVAILABLE {target['operating_system']} {target['operating_system_version']} images compatible with {target['shape']} in this tenancy/region.")
         return pinned[0]
     return good[0]
 
@@ -416,9 +425,9 @@ def verify_monthly_allowance(account: dict[str, Any], target: dict[str, Any]) ->
     projected_cpu = float(target["ocpus"]) * max_hours + float(account.get("other_monthly_a1_ocpu_hours", 0))
     projected_memory = float(target["memory_gb"]) * max_hours + float(account.get("other_monthly_a1_memory_gb_hours", 0))
     if projected_cpu > float(account.get("monthly_a1_ocpu_hours", 1500)):
-        raise GuardError(f"Worst-case monthly A1 use would exceed 1,500 OCPU-hours ({projected_cpu:.0f}).")
+        raise GuardError(f"Worst-case monthly A1 use would exceed the configured OCPU-hour budget ({projected_cpu:.0f} projected).")
     if projected_memory > float(account.get("monthly_a1_memory_gb_hours", 9000)):
-        raise GuardError(f"Worst-case monthly A1 use would exceed 9,000 GB-hours ({projected_memory:.0f}).")
+        raise GuardError(f"Worst-case monthly A1 use would exceed the configured memory-hour budget ({projected_memory:.0f} projected).")
     return {"max_month_hours": float(max_hours), "projected_ocpu_hours": projected_cpu, "projected_memory_gb_hours": projected_memory}
 
 
@@ -440,9 +449,9 @@ def run_audit(clients: tuple[Any, Any, Any, Any, Any, Any], cfg: dict[str, Any],
         )
     instance_usage = inspect_instances(compute, identity, tenancy_id, target)
     if instance_usage["a1_ocpu_in_use"] + float(target["ocpus"]) > float(account.get("a1_free_max_ocpu", 2)):
-        raise GuardError("Existing A1 instances plus target would exceed the tenancy's 2-OCPU Always Free allowance.")
+        raise GuardError("Existing A1 instances plus target would exceed the configured A1 OCPU allowance.")
     if instance_usage["a1_memory_in_use_gb"] + float(target["memory_gb"]) > float(account.get("a1_free_max_memory_gb", 12)):
-        raise GuardError("Existing A1 instances plus target would exceed the tenancy's 12-GB Always Free memory allowance.")
+        raise GuardError("Existing A1 instances plus target would exceed the configured A1 memory allowance.")
     monthly = verify_monthly_allowance(account, target)
     live_limits = None
     try:
@@ -491,7 +500,7 @@ def run_audit(clients: tuple[Any, Any, Any, Any, Any, Any], cfg: dict[str, Any],
     if account.get("current_month_usage_reviewed") is not True:
         LOG.warning("Current-month A1 usage has not been manually reviewed; launch remains blocked even if live quota checks pass.")
     if not summary["image_console_always_free_confirmed"]:
-        LOG.warning("Ubuntu image is only a compatible candidate. Pin its OCID and confirm the 'Always Free Eligible' Console label before enabling creation.")
+        LOG.warning("The image is only a compatible candidate. Pin its OCID and confirm the 'Always Free Eligible' Console label before enabling creation.")
     return summary
 
 
@@ -626,13 +635,13 @@ def launch_one(compute: Any, tenancy_id: str, target: dict[str, Any], audit: dic
         ),
         create_vnic_details=oci.core.models.CreateVnicDetails(
             subnet_id=audit["subnet_ocid"],
-            assign_public_ip=True,
+            assign_public_ip=bool(target["assign_public_ip"]),
         ),
         metadata={"ssh_authorized_keys": ssh_public_key},
         freeform_tags={"managed-by": "oci-free-watch", "free-tier-intent": "A1-Always-Free"},
     )
-    LOG.warning("Submitting the one explicitly authorized VM.Standard.A1.Flex launch request.")
-    notify({}, f"OCI: launch initiated for {target['display_name']} (2 OCPU, 4 GB RAM, 150 GB boot).")
+    LOG.warning("Submitting the one explicitly authorized %s launch request.", target["shape"])
+    notify({}, f"OCI: launch initiated for {target['display_name']} ({target['ocpus']} OCPU, {target['memory_gb']} GB RAM, {target['boot_volume_size_gb']} GB boot).")
     response = compute.launch_instance(
         launch_details,
         opc_retry_token=token,
@@ -667,7 +676,7 @@ def calculate_wait_seconds(cfg: dict[str, Any], attempt: int, rate_limited: bool
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="OCI Always Free A1 capacity monitor (read-only by default)")
+    parser = argparse.ArgumentParser(description="Configurable OCI Always Free A1 capacity monitor (read-only by default)")
     parser.add_argument("--config", default=str(APP_DIR / "config.json"), help="Path to application JSON config")
     parser.add_argument("--audit", action="store_true", help="Perform one read-only audit and exit")
     parser.add_argument("--once", action="store_true", help="Perform one audit and capacity check, then exit")
