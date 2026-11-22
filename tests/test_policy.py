@@ -43,8 +43,30 @@ class PolicyTests(unittest.TestCase):
         with self.assertRaises(app.GuardError):
             app.check_static_free_tier_policy(self.account, self.target)
 
-    def test_wrong_storage_is_rejected(self):
-        self.target["boot_volume_size_gb"] = 50
+    def test_configurable_a1_target_within_limits_passes(self):
+        self.target["ocpus"] = 1
+        self.target["memory_gb"] = 6
+        self.target["boot_volume_size_gb"] = 100
+        app.check_static_free_tier_policy(self.account, self.target)
+
+    def test_target_above_configured_cpu_limit_is_rejected(self):
+        self.target["ocpus"] = 3
+        with self.assertRaises(app.GuardError):
+            app.check_static_free_tier_policy(self.account, self.target)
+
+    def test_target_above_configured_memory_limit_is_rejected(self):
+        self.target["memory_gb"] = 13
+        with self.assertRaises(app.GuardError):
+            app.check_static_free_tier_policy(self.account, self.target)
+
+    def test_boot_volume_below_minimum_is_rejected(self):
+        self.target["boot_volume_size_gb"] = 49
+        with self.assertRaises(app.GuardError):
+            app.check_static_free_tier_policy(self.account, self.target)
+
+    def test_empty_home_region_is_rejected(self):
+        self.account["home_region"] = ""
+        self.target["region"] = ""
         with self.assertRaises(app.GuardError):
             app.check_static_free_tier_policy(self.account, self.target)
 
