@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG="${OCI_APP_CONFIG:-$ROOT/config.json}"
+VENV_PYTHON="$ROOT/.venv/bin/python"
+PYTHON="${OCI_PYTHON:-$VENV_PYTHON}"
+UNIT="${OCI_SYSTEMD_UNIT:-oci-free-watch.service}"
+
+usage() {
+  cat <<'EOF'
+OCI Free A1 monitor helper
+
+Usage:
+  ./oci-free setup
+  ./oci-free config-check
+  ./oci-free test
+  ./oci-free audit
+  ./oci-free once
+  ./oci-free monitor
+  ./oci-free status
+  ./oci-free logs
+
+All commands are read-only with respect to OCI resources.
+The monitor command does not pass --enable-create.
+EOF
+}
+
+require_python() {
+  if [[ ! -x "$PYTHON" ]]; then
+    echo "Python environment not found. Run: ./oci-free setup" >&2
+    exit 2
+  fi
+}
+
+case "${1:-help}" in
+  help|-h|--help)
+    usage
+    ;;
+  setup)
+    command -v python3 >/dev/null 2>&1 || { echo "python3 is required." >&2; exit 2; }
+    if [[ ! -d "$ROOT/.venv" ]]; then
+      python3 -m venv "$ROOT/.venv"
+    fi
+    "$VENV_PYTHON" -m pip install --upgrade pip
+    "$VENV_PYTHON" -m pip install -r "$ROOT/requirements.txt"
+    if [[ ! -f "$CONFIG" ]]; then
+      cp "$ROOT/config.example.json" "$CONFIG"
+      chmod 600 "$CONFIG"
+      echo "Created local config: $CONFIG"
+    else
+      echo "Preserved existing config: $CONFIG"
+    fi
+    mkdir -p "$ROOT/logs" "$ROOT/state"
+    chmod 700 "$ROOT/logs" "$ROOT/state"
+    echo "Setup complete. Edit config.json, then run ./oci-free config-check and ./oci-free audit."
+    ;;
+  config-check)
+    require_python
+    [[ -f "$CONFIG" ]] || { echo "Missing $CONFIG. Run ./oci-free setup." >&2; exit 2; }
+    "$PYTHON" -c 'import json,sys; p=sys.argv[1]; c=json.load(open(p,encoding="utf-8")); required={"account.home_region":c.get("account",{}).get("home_region"),"target.region":c.get("target",{}).get("region"),"target.availability_domain":c.get("target",{}).get("availability_domain"),"target.vcn_ocid":c.get("target",{}).get("vcn_ocid"),"target.display_name":c.get("target",{}).get("display_name"),"target.ssh_public_key_file":c.get("target",{}).get("ssh_public_key_file")}; missing=[k for k,v in required.items() if not v]; print("Config structure: OK" if not missing else "Missing values: "+", ".join(missing)); sys.exit(1 if missing else 0)' "$CONFIG"
+    ;;
+  test)
+    require_python
+    cd "$ROOT"
+    "$PYTHON" -m unittest discover -s tests -v
+    ;;
+  audit)
+    require_python
+    exec "$PYTHON" "$ROOT/oci_free_watch.py" --config "$CONFIG" --audit
+    ;;
+  once)
+    require_python
+    exec "$PYTHON" "$ROOT/oci_free_watch.py" --config "$CONFIG" --once
+    ;;
+  monitor)
+    require_python
+    exec "$PYTHON" "$ROOT/oci_free_watch.py" --config "$CONFIG" --monitor
+    ;;
+  status)
+    systemctl status "$UNIT" --no-pager
+    ;;
+  logs)
+    command -v journalctl >/dev/null 2>&1 || { echo "journalctl is not available on this host." >&2; exit 2; }
+    exec journalctl -u "$UNIT" -f
+    ;;
+  *)
+    echo "Unknown command: $1" >&2
+    usage
+    exit 2
+    ;;
+esac

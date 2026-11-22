@@ -144,10 +144,12 @@ def check_static_free_tier_policy(account: dict[str, Any], target: dict[str, Any
     ocpus = float(target.get("ocpus", 0))
     memory = float(target.get("memory_gb", 0))
     boot_gb = int(target.get("boot_volume_size_gb", 0))
-    if ocpus != 2 or memory != 4:
-        raise GuardError("This project is locked to exactly 2 OCPU and 4 GB RAM.")
-    if boot_gb != 150:
-        raise GuardError("This project is locked to exactly a 150 GB boot volume.")
+    if ocpus <= 0 or not ocpus.is_integer():
+        raise GuardError("Requested OCPU must be a positive whole number.")
+    if memory <= 0:
+        raise GuardError("Requested memory_gb must be greater than zero.")
+    if boot_gb <= 0:
+        raise GuardError("boot_volume_size_gb must be greater than zero.")
     if ocpus > float(account.get("a1_free_max_ocpu", 2)):
         raise GuardError("Requested OCPU exceeds the configured Always Free A1 limit.")
     if memory > float(account.get("a1_free_max_memory_gb", 12)):
@@ -415,10 +417,12 @@ def verify_monthly_allowance(account: dict[str, Any], target: dict[str, Any]) ->
     max_hours = 31 * 24
     projected_cpu = float(target["ocpus"]) * max_hours + float(account.get("other_monthly_a1_ocpu_hours", 0))
     projected_memory = float(target["memory_gb"]) * max_hours + float(account.get("other_monthly_a1_memory_gb_hours", 0))
-    if projected_cpu > float(account.get("monthly_a1_ocpu_hours", 1500)):
-        raise GuardError(f"Worst-case monthly A1 use would exceed 1,500 OCPU-hours ({projected_cpu:.0f}).")
-    if projected_memory > float(account.get("monthly_a1_memory_gb_hours", 9000)):
-        raise GuardError(f"Worst-case monthly A1 use would exceed 9,000 GB-hours ({projected_memory:.0f}).")
+    cpu_cap = float(account.get("monthly_a1_ocpu_hours", 1500))
+    memory_cap = float(account.get("monthly_a1_memory_gb_hours", 9000))
+    if projected_cpu > cpu_cap:
+        raise GuardError(f"Worst-case monthly A1 use would exceed the configured {cpu_cap:g} OCPU-hour cap ({projected_cpu:.0f}).")
+    if projected_memory > memory_cap:
+        raise GuardError(f"Worst-case monthly A1 use would exceed the configured {memory_cap:g} GB-hour cap ({projected_memory:.0f}).")
     return {"max_month_hours": float(max_hours), "projected_ocpu_hours": projected_cpu, "projected_memory_gb_hours": projected_memory}
 
 
@@ -440,9 +444,15 @@ def run_audit(clients: tuple[Any, Any, Any, Any, Any, Any], cfg: dict[str, Any],
         )
     instance_usage = inspect_instances(compute, identity, tenancy_id, target)
     if instance_usage["a1_ocpu_in_use"] + float(target["ocpus"]) > float(account.get("a1_free_max_ocpu", 2)):
-        raise GuardError("Existing A1 instances plus target would exceed the tenancy's 2-OCPU Always Free allowance.")
+        raise GuardError(
+            "Existing A1 instances plus target would exceed the configured OCPU cap "
+            f"({account.get('a1_free_max_ocpu', 2)} OCPU)."
+        )
     if instance_usage["a1_memory_in_use_gb"] + float(target["memory_gb"]) > float(account.get("a1_free_max_memory_gb", 12)):
-        raise GuardError("Existing A1 instances plus target would exceed the tenancy's 12-GB Always Free memory allowance.")
+        raise GuardError(
+            "Existing A1 instances plus target would exceed the configured memory cap "
+            f"({account.get('a1_free_max_memory_gb', 12)} GB)."
+        )
     monthly = verify_monthly_allowance(account, target)
     live_limits = None
     try:
@@ -632,7 +642,12 @@ def launch_one(compute: Any, tenancy_id: str, target: dict[str, Any], audit: dic
         freeform_tags={"managed-by": "oci-free-watch", "free-tier-intent": "A1-Always-Free"},
     )
     LOG.warning("Submitting the one explicitly authorized VM.Standard.A1.Flex launch request.")
-    notify({}, f"OCI: launch initiated for {target['display_name']} (2 OCPU, 4 GB RAM, 150 GB boot).")
+    notify(
+        {},
+        f"OCI: launch initiated for {target['display_name']} "
+        f"({target['ocpus']} OCPU, {target['memory_gb']} GB RAM, "
+        f"{target['boot_volume_size_gb']} GB boot).",
+    )
     response = compute.launch_instance(
         launch_details,
         opc_retry_token=token,
@@ -785,7 +800,12 @@ def main() -> int:
             if has_capacity and not create_armed:
                 LOG.info("Capacity is available, but READ-ONLY mode prevents launch. To arm later, use all three explicit creation switches.")
             else:
-                notify(cfg, "OCI A1 capacity is not currently reported for 2 OCPU / 4 GB in the configured AD. Another check will be scheduled.")
+                notify(
+                    cfg,
+                    "OCI A1 capacity is not currently reported for "
+                    f"{target['ocpus']} OCPU / {target['memory_gb']} GB in the configured AD. "
+                    "Another check will be scheduled.",
+                )
             if args.once:
                 LOG.info("One-shot capacity check completed. No instance launch occurred.")
                 return 0
