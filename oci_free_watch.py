@@ -419,7 +419,7 @@ def inspect_instances(compute: Any, identity: Any, tenancy_id: str, target: dict
 
 
 def verify_monthly_allowance(account: dict[str, Any], target: dict[str, Any]) -> dict[str, float]:
-    # OCI's A1 Always Free allowance is 1,500 OCPU-hours and 9,000 GB-hours/month.
+    # Budgets are operator-configured. Use Oracle Console and current policy to set them.
     # Max calendar month is 31 days = 744 hours.
     max_hours = 31 * 24
     projected_cpu = float(target["ocpus"]) * max_hours + float(account.get("other_monthly_a1_ocpu_hours", 0))
@@ -794,7 +794,7 @@ def main() -> int:
             if has_capacity and not create_armed:
                 LOG.info("Capacity is available, but READ-ONLY mode prevents launch. To arm later, use all three explicit creation switches.")
             else:
-                notify(cfg, "OCI A1 capacity is not currently reported for 2 OCPU / 4 GB in the configured AD. Another check will be scheduled.")
+                notify(cfg, f"OCI A1 capacity is not currently reported for {target['ocpus']} OCPU / {target['memory_gb']} GB in the configured AD. Another check will be scheduled.")
             if args.once:
                 LOG.info("One-shot capacity check completed. No instance launch occurred.")
                 return 0
