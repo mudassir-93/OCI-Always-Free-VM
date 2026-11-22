@@ -173,3 +173,14 @@ For each future milestone, append:
 - `main` remains at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`. Both PRs remain unmerged pending explicit operator approval.
 - Remaining release validation is a fresh real workstation install on Windows and Linux. CI PowerShell syntax parsing is not equivalent to executing the Windows installer end-to-end; Linux integration tests cover clone failure, venv failure, and existing-directory preservation.
 - No live OCI audit, VM launch, account/billing change, production server change, or local workstation installation was performed.
+
+
+## 2026-11-22 — Windows installer safety integration tests
+
+- Added `tests/test_installers_windows.ps1` and wired it into the Windows GitHub Actions matrix.
+- The Windows integration test executes the actual PowerShell installer script against temporary directories: it verifies an existing destination and sentinel file remain untouched, then simulates Git clone failure and verifies only the installer-owned incomplete directory is removed.
+- First CI attempt correctly exercised both safety scenarios but returned process exit code 1 because the deliberately failing fake Git command left a nonzero native exit code. Added an explicit successful test-process exit after all assertions.
+- Corrected code commit `6af29f358c0b8d1c880d76d4da265e8da32b3e68` passed all four CLI matrix jobs (Windows/Linux × Python 3.11/3.12) and both Python-check jobs.
+- Updated the installation smoke-test guide to describe the expanded automated coverage and retain successful clean-machine installation as a manual release gate.
+- Latest docs commit `bbd803b8f40e10a3d31b50538a31ce947937e4da` has fresh CI queued/running; do not mark that exact HEAD green until both workflows complete.
+- No OCI calls, VM launch, production changes, account/billing changes, or PR merges. Main remains untouched.
