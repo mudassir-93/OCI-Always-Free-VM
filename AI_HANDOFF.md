@@ -134,3 +134,13 @@ Before ending a work session:
 - Existing tests already cover config backup creation and forced disarming of previously armed VM creation settings.
 - `main` remains at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`; PR #5/#6 remain open/draft; no live OCI, VM launch, or production changes.
 - Next: verify Windows matrix completion, then arrange real fresh-install checks on Windows and Linux after both PRs are approved and merged.
+
+
+## Final CI recheck — 2026-11-22
+
+- Installer wizard branch HEAD `b64a44df77faf37f1a41dbf7db7104e694be975d`: CLI foundation matrix passed on Windows/Linux × Python 3.11/3.12; Python checks passed on Python 3.11/3.12.
+- Foundation PR #5 head `5b91248419182a06216f400296a9f2c0546a2be9`: its CLI foundation and Python checks runs are successful.
+- PR #5 remains draft against `main`; PR #6 remains draft against the foundation feature branch. No review submissions or inline review threads are present.
+- Main SHA is unchanged at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`.
+- The remaining external release gate is actual clean-workstation installation on Windows and Linux. Current CI parses the PowerShell installer but does not execute it end-to-end; POSIX integration tests cover clone failure, venv failure, and existing-directory protection.
+- No cloud resources, OCI tenancy, billing settings, EC2, or production deployment were touched. No PR merge was performed.
