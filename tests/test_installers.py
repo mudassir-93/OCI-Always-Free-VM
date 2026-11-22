@@ -74,15 +74,15 @@ class LinuxInstallerFailureTests(unittest.TestCase):
 
             fake_python = fake_bin / "python3.12"
             fake_python.write_text(
-                "#!/bin/sh\\n"
-                'if [ "$1" = "-c" ]; then case "$2" in *sys.version_info*) printf "3.12\\\\n"; exit 0;; esac; fi\\n'
-                'if [ "$1" = "-m" ] && [ "$2" = "venv" ]; then exit 43; fi\\n'
-                'exec "$REAL_PYTHON" "$@"\\n',
+                "#!/bin/sh\n"
+                'if [ "$1" = "-c" ]; then case "$2" in *sys.version_info*) printf 3.12; exit 0;; esac; fi\n'
+                'if [ "$1" = "-m" ] && [ "$2" = "venv" ]; then exit 43; fi\n'
+                'exec "$REAL_PYTHON" "$@"\n',
                 encoding="utf-8",
             )
             fake_python.chmod(0o755)
             fake_git = fake_bin / "git"
-            fake_git.write_text("#!/bin/sh\\nexit 0\\n", encoding="utf-8")
+            fake_git.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
             fake_git.chmod(0o755)
 
             result = self._run_installer(home, install_dir, fake_bin)
