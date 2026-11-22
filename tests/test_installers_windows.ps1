@@ -70,3 +70,7 @@ finally {
     }
     Remove-Item -LiteralPath $TestRoot -Recurse -Force -ErrorAction SilentlyContinue
 }
+
+# The simulated native Git command intentionally returned 42; normalize the
+# successful test script's process exit code after all assertions pass.
+exit 0
