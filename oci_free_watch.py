@@ -159,7 +159,7 @@ def check_static_free_tier_policy(account: dict[str, Any], target: dict[str, Any
         monthly_memory_budget = float(account.get("monthly_a1_memory_gb_hours", 9000))
         other_cpu_hours = float(account.get("other_monthly_a1_ocpu_hours", 0))
         other_memory_hours = float(account.get("other_monthly_a1_memory_gb_hours", 0))
-    except (TypeError, ValueError) as exc:
+    except (TypeError, ValueError, OverflowError) as exc:
         raise GuardError("OCPU, memory, boot volume, and account budgets must be valid numbers.") from exc
 
     numeric_values = (ocpus, memory, boot_value, max_ocpus, max_memory,
