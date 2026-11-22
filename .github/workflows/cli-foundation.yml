@@ -47,14 +47,14 @@ jobs:
         shell: pwsh
         run: |
           $tokens = $null
-          $errors = $null
+          $parseErrors = $null
           [System.Management.Automation.Language.Parser]::ParseFile(
             (Join-Path $PWD "install.ps1"),
             [ref]$tokens,
-            [ref]$errors
+            [ref]$parseErrors
           ) | Out-Null
-          if ($errors.Count -gt 0) {
-            $errors | ForEach-Object { Write-Error $_ }
+          if ($parseErrors.Count -gt 0) {
+            $parseErrors | ForEach-Object { Write-Error $_ }
             exit 1
           }
 
