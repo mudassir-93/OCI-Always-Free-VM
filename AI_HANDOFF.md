@@ -64,6 +64,7 @@ At the previous verified Milestone 2 HEAD (`1f65967a3bd128bd7e55c1314b219a068abd
 - Prior CI logs include offline tests, compile checks, Linux shell syntax, Windows PowerShell parser validation, wheel packaging, and CLI help/version checks.
 - Follow-up review added Windows install-path normalization for relative `OCI_PLATFORM_HOME` values and an offline test proving a target region different from the tenancy home region is rejected without writing config.
 - CI for current code HEAD (`193c1ee35a32fa336d3f2e7e37c7115233a343d8`) is running/queued; do not claim this latest patch is validated until both workflows pass.
+- The temporary accidental default-branch handoff commit was removed and `main` was force-restored with a lease to its exact pre-change commit `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`; the default branch now matches its original head again.
 - No real fresh-machine installation has been performed yet.
 - No live OCI integration test has been performed or authorized.
 - Do not describe installer as production-validated until a fresh Windows and Linux workstation test has passed.
