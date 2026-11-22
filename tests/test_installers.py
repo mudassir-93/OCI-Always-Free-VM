@@ -29,7 +29,7 @@ class LinuxInstallerFailureTests(unittest.TestCase):
         python = fake_bin / "python3.12"
         python.write_text(
             "#!/bin/sh\n"
-            'if [ "$1" = "-c" ] && [ "$2" = "import sys; print(\\"%d.%d\\" % sys.version_info[:2])" ]; then printf "3.12\\n"; exit 0; fi\n'
+            'if [ "$1" = "-c" ]; then case "$2" in *sys.version_info*) printf "3.12\\n"; exit 0;; esac; fi\n'
             'exec "$REAL_PYTHON" "$@"\n',
             encoding="utf-8",
         )
