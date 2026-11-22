@@ -142,3 +142,13 @@ For each future milestone, append:
 - PR #5 and #6 remain open/draft; PR #6 remains stacked on PR #5. No merge performed.
 - No live OCI API calls, VM launch, production deployment change, or modification to `main`.
 - Next: inspect fresh CI for the new HEAD, continue remaining config/installer edge-case review, and then request operator review before any merge.
+
+
+## 2026-11-22 — Cross-platform fresh-install release checklist
+
+- Added `docs/testing/INSTALLATION_SMOKE_TEST.md` with explicit clean-machine Windows and Linux install steps, local-only configuration checks, existing-directory preservation checks, evidence rules, completion criteria, and clear OCI safety boundaries.
+- Linked the checklist from the README installer section.
+- Recorded the current validation gap: CI parses the PowerShell installer but does not execute a full Windows installation; the automated installer integration test currently exercises POSIX cleanup/preservation only.
+- The checklist explicitly requires fresh Windows and Linux workstation tests before calling the installer milestone release-ready.
+- No installer was executed on the user's machine; no live OCI calls, VM launch, production changes, or merge occurred.
+- Next: add wizard regression coverage for backup creation and forcibly clearing previously armed creation settings; then check CI for the new documentation commits and arrange fresh workstation validation after the PRs are merged.
