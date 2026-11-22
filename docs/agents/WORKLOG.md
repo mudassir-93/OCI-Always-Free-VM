@@ -108,3 +108,12 @@ For each future milestone, append:
 - No local fresh-workstation installation, live OCI API operation, VM launch, or production deployment test was performed.
 - Safety: `main` remains unchanged by this milestone; no PR was merged and no live cloud or production resource was touched.
 - Next: perform a focused review of installer failure handling and wizard edge cases on the feature branch; report concrete findings and fixes. Then ask the user to approve PR #5 before merging. Keep PR #6 stacked until #5 is accepted.
+
+## 2026-11-22 — Milestone 2 follow-up review
+
+- Added Windows installer path normalization so relative `OCI_PLATFORM_HOME` values are converted to absolute paths before parent-directory creation and cloning.
+- Added an offline wizard regression test proving a target region different from the tenancy home region is rejected without writing a config.
+- Current code HEAD before this documentation update: `193c1ee35a32fa336d3f2e7e37c7115233a343d8`.
+- CI for that code HEAD was queued/running when checked; verify exact-HEAD CLI foundation and Python checks before claiming success.
+- No OCI credentials, live API calls, VM launches, production deployment changes, or changes to the `main` working tree remain after the corrective removal of the accidentally placed handoff file.
+- Next: inspect exact-HEAD CI results, fix any failures, then continue PR #6 review and fresh-machine test planning.
