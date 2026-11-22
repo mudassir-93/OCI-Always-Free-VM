@@ -9,7 +9,6 @@ import argparse
 import configparser
 import json
 import os
-import shutil
 import sys
 from importlib.resources import files
 from pathlib import Path
