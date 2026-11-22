@@ -83,3 +83,16 @@ For each future milestone, append:
 - Safety review: no account-specific values or credentials were added; setup does not contact OCI or overwrite an existing config; VM creation still requires the original three independent switches and live preflight.
 - Known risks / next checks: perform a human review of CLI UX and configuration migration behavior; verify the final CI rerun. The one-command installer and interactive wizard remain intentionally out of scope. Do not merge until the final checks and operator review are complete.
 - Next task: fix any CI or review findings, then prepare a draft PR for operator review. Installer and guided wizard remain a later milestone.
+
+## 2026-11-22 — CLI V1 Milestone 2: installer and guided configuration (in progress)
+
+- Created stacked branch `feat/cli-v1-installer-wizard` from the CLI foundation branch; this milestone depends on PR #5 and does not change `main`.
+- Added `oci-platform configure`, a local interactive wizard covering OCI SDK config path/profile, Free Tier confirmation, tenancy home region, target region, existing VCN/subnet, A1 resources, storage, SSH public-key path, pinned Ubuntu image, manual image eligibility, current-month usage review, monthly policy budgets, retry timing, log/state paths, and log level.
+- The wizard rejects a target region that differs from the home region, enforces configured resource/storage caps, makes a timestamped backup of existing config, and keeps creation disabled regardless of previous config state.
+- Added a Windows PowerShell installer and Linux shell installer. Both clone the repository into a new user-owned install directory, create an isolated venv, install the CLI, and run creation-disabled local setup.
+- Installers refuse to overwrite an existing install directory, do not use elevated privileges, do not add PATH entries or install services, and never contact OCI.
+- Added offline wizard tests and CI checks for shell and PowerShell syntax.
+- CI status: pending for this branch. No local execution in this environment; GitHub Actions will provide Windows/Linux coverage.
+- Not tested: running installer on a real fresh Windows or Linux workstation, and any live OCI API interaction.
+- Safety review: no credentials or account-specific OCIDs added; no cloud resources or production deployments accessed; no instance launch path enabled by installer/wizard.
+- Next: fix CI findings, inspect the final diff, open a draft stacked PR against `feat/cli-v1-foundation`, then manually test installation on the user's separate machine after both PRs are merged.
