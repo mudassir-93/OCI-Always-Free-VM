@@ -1,0 +1,54 @@
+{
+  "oci": {
+    "config_file": "~/.oci/config",
+    "profile": "DEFAULT"
+  },
+  "account": {
+    "account_type": "FREE_TIER",
+    "free_tier_only_confirmed": true,
+    "allow_paid_resources": false,
+    "home_region": "me-dubai-1",
+    "a1_free_max_ocpu": 2,
+    "a1_free_max_memory_gb": 12,
+    "combined_free_volume_gb": 200,
+    "monthly_a1_ocpu_hours": 1500,
+    "monthly_a1_memory_gb_hours": 9000,
+    "other_monthly_a1_ocpu_hours": 0,
+    "other_monthly_a1_memory_gb_hours": 0,
+    "current_month_usage_reviewed": false
+  },
+  "target": {
+    "region": "me-dubai-1",
+    "availability_domain": "svhq:ME-DUBAI-1-AD-1",
+    "vcn_ocid": "",
+    "subnet_ocid": "",
+    "display_name": "oci-alwaysfree-a1-ubuntu2404",
+    "shape": "VM.Standard.A1.Flex",
+    "ocpus": 2,
+    "memory_gb": 4,
+    "operating_system": "Canonical Ubuntu",
+    "operating_system_version": "24.04",
+    "boot_volume_size_gb": 150,
+    "boot_volume_vpus_per_gb": 10,
+    "assign_public_ip": true,
+    "ssh_public_key_file": "~/.ssh/oci_free_vm.pub",
+    "image_ocid": "",
+    "image_console_always_free_confirmed": false
+  },
+  "mode": {
+    "creation_enabled": false,
+    "creation_confirmation": "",
+    "capacity_poll_minutes": 20,
+    "max_backoff_minutes": 180,
+    "max_attempts": 0,
+    "instance_wait_timeout_minutes": 40,
+    "instance_poll_seconds": 20
+  },
+  "paths": {
+    "log_file": "./logs/oci-free-watch.log",
+    "state_file": "./state/state.json"
+  },
+  "logging": {
+    "level": "INFO"
+  }
+}
