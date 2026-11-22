@@ -27,9 +27,9 @@ Repository: [mudassir-93/OCI-Always-Free-VM](https://github.com/mudassir-93/OCI-
 | Milestone 1 PR | [#5 — cross-platform CLI foundation](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/5), OPEN, DRAFT, not merged |
 | Milestone 2 branch | `feat/cli-v1-installer-wizard` |
 | Milestone 2 PR | [#6 — installer and guided configuration](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/6), OPEN, DRAFT, not merged |
-| Milestone 2 HEAD | `e6ae13225e646abe9725bd004b4177135483a237` at last checked code change |
+| Milestone 2 HEAD | `12016469da75e03ea2ec2d9b8e6a263b4f15a933` (latest review fix + regression test) |
 | PR #6 base | `feat/cli-v1-foundation` (stacked on PR #5) |
-| CI at latest checked HEAD | Python checks COMPLETED / SUCCESS on Python 3.11 and 3.12; CLI foundation matrix has both Linux jobs successful and Windows jobs still running |
+| CI at latest checked code HEAD | Python checks and CLI foundation matrix completed SUCCESS on Windows/Linux × Python 3.11/3.12 at parent HEAD `1b4c055cc4a8d08767cba347916b87690eb5971f`; new VPU guard fix is awaiting fresh CI |
 | Live cloud work | None; no OCI API calls, VM launch, or production deployment changes |
 
 PR #6 depends on PR #5. Keep the dependency explicit. Do not merge #6 into `main` before #5 is accepted. After the user approves merging #5, re-check PR #6's base and retarget it to `main` only with approval. Then rerun all CI before requesting approval to merge #6.
@@ -79,13 +79,14 @@ At the previous verified Milestone 2 HEAD (`1f65967a3bd128bd7e55c1314b219a068abd
 - Installers are first-install scripts, not update/uninstall/rollback managers.
 - The wizard does not authenticate to OCI or verify the account/image/region live; its confirmations are operator attestations. The engine's live preflight remains authoritative.
 - No GUI/dashboard, multi-cloud support, auto-update, rollback, service manager, or interactive monitoring TUI is in scope yet.
-- Review wizard validation and installer failure cleanup before calling this release-ready.
+- Wizard boot-volume performance now rejects anything except the engine's exact 10-VPU/GB policy; regression test added. Fresh CI is pending.
+- Review remaining wizard validation and installer failure cleanup before calling this release-ready.
 - Do not assume OCI billing or Always Free eligibility from local configuration values.
 
 ## Exact next actions
 
 1. Re-read `AGENTS.md`, `docs/agents/PROJECT_MEMORY.md`, this file, and the latest PR #5/#6 status.
-2. Re-check the CLI foundation matrix for HEAD `e6ae13225e646abe9725bd004b4177135483a237`, especially both Windows jobs. Review PowerShell cleanup behavior and the full PR #6 diff. Do not merge.
+2. Re-check fresh CI for HEAD `12016469da75e03ea2ec2d9b8e6a263b4f15a933`. Review PowerShell cleanup behavior and remaining PR #6 edge cases. Do not merge.
 3. Add tests/fixes for any concrete findings on `feat/cli-v1-installer-wizard`; update this file and `docs/agents/WORKLOG.md` after meaningful changes.
 4. Ask the user to review/approve PR #5 before merging it. Do not merge autonomously.
 5. After #5 is approved and merged, with approval retarget #6 to `main`, rerun CI, and ask for #6 approval.
@@ -101,3 +102,15 @@ Before ending a work session:
 - Commit/push work on the approved feature branch only.
 - Report tests passed, failed, and not run separately.
 - State explicitly whether `main`, live OCI, and production were untouched.
+
+
+## Review correction — boot-volume policy alignment (2026-11-22)
+
+- Code review found that the wizard accepted boot-volume performance values from 10 through 120 VPUs/GB, while the existing engine's safety guard permits exactly 10 VPUs/GB.
+- Updated the wizard to reject every value except 10 before saving configuration.
+- Added an offline regression test proving a value of 20 is rejected and no new config file is written.
+- New feature-branch HEAD: `12016469da75e03ea2ec2d9b8e6a263b4f15a933`.
+- Previous full CI matrix at parent HEAD `1b4c055cc4a8d08767cba347916b87690eb5971f` passed Windows/Linux × Python 3.11/3.12. Fresh CI for this review fix is pending.
+- PR #5 and PR #6 remain open and draft. PR #6 remains stacked on PR #5.
+- `main`, production deployments, and live OCI resources were not modified or accessed.
+- Next: verify fresh CI, continue safety review, then request operator review; do not merge without explicit approval.
