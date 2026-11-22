@@ -42,6 +42,11 @@ jobs:
       - name: Run offline tests
         run: python -m unittest discover -s tests -v
 
+      - name: Verify wheel contains the packaged setup template
+        run: |
+          python -m pip wheel --no-deps --wheel-dir dist .
+          python -c "import glob, zipfile; wheel = glob.glob('dist/*.whl')[0]; names = zipfile.ZipFile(wheel).namelist(); assert 'oci_platform/templates/config.example.json' in names, names"
+
       - name: Verify CLI entry point
         run: |
           oci-platform --help
