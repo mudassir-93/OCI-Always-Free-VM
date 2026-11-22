@@ -15,6 +15,7 @@ import argparse
 import fcntl
 import json
 import logging
+import math
 from logging.handlers import RotatingFileHandler
 import os
 from pathlib import Path
@@ -150,13 +151,29 @@ def check_static_free_tier_policy(account: dict[str, Any], target: dict[str, Any
     try:
         ocpus = float(target.get("ocpus", 0))
         memory = float(target.get("memory_gb", 0))
-        boot_gb = int(target.get("boot_volume_size_gb", 0))
+        boot_value = float(target.get("boot_volume_size_gb", 0))
         max_ocpus = float(account.get("a1_free_max_ocpu", 2))
         max_memory = float(account.get("a1_free_max_memory_gb", 12))
         max_storage = int(account.get("combined_free_volume_gb", 200))
+        monthly_cpu_budget = float(account.get("monthly_a1_ocpu_hours", 1500))
+        monthly_memory_budget = float(account.get("monthly_a1_memory_gb_hours", 9000))
+        other_cpu_hours = float(account.get("other_monthly_a1_ocpu_hours", 0))
+        other_memory_hours = float(account.get("other_monthly_a1_memory_gb_hours", 0))
     except (TypeError, ValueError) as exc:
-        raise GuardError("OCPU, memory, boot volume, and account limits must be valid numbers.") from exc
+        raise GuardError("OCPU, memory, boot volume, and account budgets must be valid numbers.") from exc
 
+    numeric_values = (ocpus, memory, boot_value, max_ocpus, max_memory,
+                      monthly_cpu_budget, monthly_memory_budget,
+                      other_cpu_hours, other_memory_hours)
+    if not all(math.isfinite(value) for value in numeric_values):
+        raise GuardError("OCPU, memory, boot volume, and account budgets must be finite numbers.")
+    if not boot_value.is_integer():
+        raise GuardError("Boot volume size must be a whole number of GB.")
+    boot_gb = int(boot_value)
+    if max_ocpus <= 0 or max_memory <= 0 or max_storage <= 0:
+        raise GuardError("Configured A1 and storage policy limits must be greater than zero.")
+    if monthly_cpu_budget <= 0 or monthly_memory_budget <= 0 or other_cpu_hours < 0 or other_memory_hours < 0:
+        raise GuardError("Monthly budgets must be positive and previously consumed usage cannot be negative.")
     if ocpus <= 0 or ocpus > max_ocpus:
         raise GuardError(f"Requested OCPU must be greater than zero and no more than the configured A1 limit ({max_ocpus:g}).")
     if memory <= 0 or memory > max_memory:
@@ -678,6 +695,7 @@ def calculate_wait_seconds(cfg: dict[str, Any], attempt: int, rate_limited: bool
 def main() -> int:
     parser = argparse.ArgumentParser(description="Configurable OCI Always Free A1 capacity monitor (read-only by default)")
     parser.add_argument("--config", default=str(APP_DIR / "config.json"), help="Path to application JSON config")
+    parser.add_argument("--validate-config", action="store_true", help="Validate local config and policy without connecting to OCI")
     parser.add_argument("--audit", action="store_true", help="Perform one read-only audit and exit")
     parser.add_argument("--once", action="store_true", help="Perform one audit and capacity check, then exit")
     parser.add_argument("--monitor", action="store_true", help="Continuously monitor (read-only unless separately armed)")
@@ -688,6 +706,27 @@ def main() -> int:
     cfg = read_json(cfg_path)
     account, target, mode = require_config(cfg)
     check_static_free_tier_policy(account, target)
+    if args.validate_config:
+        if args.audit or args.once or args.monitor or args.enable_create:
+            raise GuardError("--validate-config is an offline check and cannot be combined with OCI operations or creation flags.")
+        print(json.dumps({
+            "config_valid": True,
+            "account_type": account.get("account_type"),
+            "home_region": account.get("home_region"),
+            "target": {
+                "region": target.get("region"),
+                "availability_domain": target.get("availability_domain"),
+                "shape": target.get("shape"),
+                "ocpus": target.get("ocpus"),
+                "memory_gb": target.get("memory_gb"),
+                "boot_volume_size_gb": target.get("boot_volume_size_gb"),
+                "assign_public_ip": target.get("assign_public_ip"),
+            },
+            "image_ocid_pinned": bool(str(target.get("image_ocid", "")).strip()),
+            "creation_enabled_in_config": mode.get("creation_enabled") is True,
+        }, indent=2))
+        return 0
+
     log_file = Path(cfg.get("paths", {}).get("log_file", str(APP_DIR / "logs/oci-free-watch.log"))).expanduser()
     state_file = Path(cfg.get("paths", {}).get("state_file", str(APP_DIR / "state/state.json"))).expanduser()
     setup_logging(log_file, cfg.get("logging", {}).get("level", "INFO"))
