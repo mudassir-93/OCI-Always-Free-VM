@@ -7,8 +7,9 @@ StartLimitBurst=3
 
 [Service]
 Type=simple
-User=ubuntu
-Group=ubuntu
+# Replace CHANGE_ME with the Linux account name and matching home directory.
+User=CHANGE_ME
+Group=CHANGE_ME
 WorkingDirectory=/opt/oci-free-instance-automation
 Environment=PYTHONUNBUFFERED=1
 EnvironmentFile=-/etc/oci-free-watch.env
