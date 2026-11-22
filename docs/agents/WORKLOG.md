@@ -197,3 +197,16 @@ For each future milestone, append:
 - Previous PR #6 code HEAD `55ee2ad3145af0b527ce6d9cf9a427d08a24ebeb` had all six CI checks green, including Windows installer safety integration tests. The new merge commit still requires its own CI.
 - No live OCI API calls, VM launch, billing/IAM changes, EC2 changes, or production deployment changes.
 - Next: verify exact-HEAD PR #6 CI, inspect final diff, then merge PR #6 using expected HEAD SHA and verify main.
+
+
+## 2026-11-22 — PR #6 merged; release validation handoff refreshed
+
+- Independently fetched PR #5 and PR #6 from GitHub and confirmed both are closed and merged into `main`.
+- PR #5 merge commit: `29b66fbe83655692633b06d1c71157071969c1d6`.
+- PR #6 merge commit and current `main` HEAD: `8eebb755b0eb29230e21994eed202a01e9217977`.
+- Confirmed PR #6 merged diff: 15 files, 1,224 additions, 6 deletions.
+- Refreshed `AI_HANDOFF.md` because its prior state incorrectly described PR #6 as open and `main` as the pre-PR-#6 commit.
+- Post-merge main CI is not verified in this session: the available commit-status lookup returned no status entries, while the workflow-run lookup exposed only pull-request-triggered runs. Do not report post-merge CI as green until checked through the Actions run for the exact main SHA.
+- The Windows and Linux fresh-workstation installs remain unperformed. Windows prerequisites are Git for Windows and Python 3.11+; installer refuses to overwrite an existing destination.
+- No local workstation commands were run. No OCI API calls, VM launch, billing/IAM changes, EC2 changes, or production deployment changes were made.
+- Next: verify post-merge Actions for `8eebb755b0eb29230e21994eed202a01e9217977`, then perform the user's Windows fresh install and validate CLI/config safety.
