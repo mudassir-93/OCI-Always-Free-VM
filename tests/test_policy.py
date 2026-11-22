@@ -13,14 +13,14 @@ class PolicyTests(unittest.TestCase):
     def setUp(self):
         self.account = {
             "account_type": "FREE_TIER", "free_tier_only_confirmed": True,
-            "allow_paid_resources": False, "home_region": "me-dubai-1",
+            "allow_paid_resources": False, "home_region": "us-phoenix-1",
             "a1_free_max_ocpu": 2, "a1_free_max_memory_gb": 12,
             "combined_free_volume_gb": 200,
             "monthly_a1_ocpu_hours": 1500, "monthly_a1_memory_gb_hours": 9000,
             "other_monthly_a1_ocpu_hours": 0, "other_monthly_a1_memory_gb_hours": 0,
         }
         self.target = {
-            "region": "me-dubai-1", "availability_domain": "svhq:ME-DUBAI-1-AD-1",
+            "region": "us-phoenix-1", "availability_domain": "ABCD:US-PHOENIX-1-AD-1",
             "shape": "VM.Standard.A1.Flex", "ocpus": 2, "memory_gb": 4,
             "boot_volume_size_gb": 150, "operating_system": "Canonical Ubuntu",
             "operating_system_version": "24.04", "assign_public_ip": True,
