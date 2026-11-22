@@ -1,6 +1,7 @@
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -12,6 +13,7 @@ class LinuxInstallerFailureTests(unittest.TestCase):
         env = os.environ.copy()
         env["HOME"] = str(home)
         env["OCI_PLATFORM_HOME"] = str(install_dir)
+        env["REAL_PYTHON"] = sys.executable
         env["PATH"] = str(fake_bin) + os.pathsep + env.get("PATH", "")
         script = Path(__file__).resolve().parents[1] / "install.sh"
         return subprocess.run(
@@ -27,8 +29,8 @@ class LinuxInstallerFailureTests(unittest.TestCase):
         python = fake_bin / "python3.12"
         python.write_text(
             "#!/bin/sh\n"
-            'if [ "$1" = "-c" ]; then printf "3.12\\n"; exit 0; fi\n'
-            "exit 99\n",
+            'if [ "$1" = "-c" ] && [ "$2" = "import sys; print(\\"%d.%d\\" % sys.version_info[:2])" ]; then printf "3.12\\n"; exit 0; fi\n'
+            'exec "$REAL_PYTHON" "$@"\n',
             encoding="utf-8",
         )
         python.chmod(0o755)
