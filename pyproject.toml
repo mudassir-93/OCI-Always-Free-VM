@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oci-automation-platform"
+version = "0.1.0"
+description = "Cross-platform CLI for guarded Oracle Cloud Infrastructure Always Free A1 automation"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "oci==2.192.0",
+]
+
+[project.scripts]
+oci-platform = "oci_platform.cli:main"
+
+[tool.setuptools]
+py-modules = ["oci_free_watch"]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["oci_platform*"]
+
+[tool.setuptools.package-data]
+oci_platform = ["templates/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
