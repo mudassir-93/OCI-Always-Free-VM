@@ -6,6 +6,7 @@ $InstallDir = if ($env:OCI_PLATFORM_HOME) {
 } else {
     Join-Path $HOME "oci-automation-platform"
 }
+$InstallDir = [System.IO.Path]::GetFullPath($InstallDir)
 
 Write-Host "OCI Automation Platform installer"
 Write-Host "This installs local CLI files only. It does not contact your OCI tenancy or create cloud resources."
