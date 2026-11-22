@@ -65,3 +65,20 @@ For each future milestone, append:
 - Repository description metadata could not be changed through the available GitHub connection actions; a suggested description and topics are provided in the handoff.
 - Tests: documentation-only change; CI validation pending on this branch.
 - No OCI credentials, live tenancy operations, or production deployments were used.
+
+## 2026-11-22 — CLI V1 foundation (in progress)
+
+- Created isolated branch `feat/cli-v1-foundation` from the reviewed `main` baseline. No changes were made to `main` or any production deployment.
+- Added an installable Python project definition and the `oci-platform` console entry point.
+- Added a thin CLI layer for local setup, diagnostics, redacted configuration summary, OCI SDK profile listing/selection, VM audit/once/monitor, local status, and logs.
+- First-run setup creates a per-user configuration from a packaged generic template only when the target file is absent. It is creation-disabled and performs no OCI API calls.
+- Preserved the original `oci_free_watch.py` entry point and added optional argv injection for CLI integration.
+- Replaced unconditional POSIX `fcntl` import with platform-specific non-blocking process locking to enable Windows and Linux engine startup.
+- Added offline CLI tests for setup preservation, profile redaction/selection, engine argument mapping, read-only defaults, and process-lock behavior.
+- Added a GitHub Actions matrix for Windows/Linux and Python 3.11/3.12.
+- Updated README, AGENTS.md, and project memory for the new CLI foundation and gradual backward-compatibility approach.
+- Tests run locally: none; this environment only provided repository-level GitHub operations. CI is pending and must pass before this milestone is accepted.
+- Tests not run: Windows/Linux execution, package build/install, all offline unit tests, and live OCI tests. No live OCI operations were attempted.
+- Safety review: no account-specific values or credentials were added; setup does not contact OCI or overwrite an existing config; VM creation still requires the original three independent switches and live preflight.
+- Known risks / next checks: validate wheel/editable installation, Windows file-lock behavior, CLI error handling, README command accuracy, and CI matrix results. Do not merge until CI and code review pass.
+- Next task: fix any CI or review findings, then prepare a draft PR for operator review. Installer and guided wizard remain a later milestone.
