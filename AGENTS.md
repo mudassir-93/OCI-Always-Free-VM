@@ -87,6 +87,7 @@ Maintain a reusable, public, multi-user OCI Always Free A1 capacity monitor and 
 - Keep AGENTS.md concise and operational.
 - Put durable architecture and decisions in docs/agents/PROJECT_MEMORY.md.
 - Record milestones and handoffs in docs/agents/WORKLOG.md.
+- Keep root-level AI_HANDOFF.md current at every session closeout; it is the first continuation document for the next AI session.
 - Use docs/agents/START_PROMPT.md as the generic prompt users can give any coding agent.
 - CLAUDE.md and GEMINI.md should remain thin wrappers around the shared instructions.
 - Do not store personal user preferences, account identifiers, secrets, or deployment-specific values in committed agent memory.
