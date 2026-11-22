@@ -80,6 +80,7 @@ Use config.example.json and placeholder documentation only. If a credential was 
 ## Development commands
 
 ~~~bash
+python oci_free_watch.py --validate-config --config config.json
 python -m py_compile oci_free_watch.py
 python -m unittest discover -s tests -v
 python oci_free_watch.py --audit --config config.json
