@@ -169,6 +169,8 @@ bash install.sh
 
 Requirements: Git and Python 3.11 or newer. The default install directory is ~/oci-automation-platform (Windows: your home directory). To select a different new directory, set OCI_PLATFORM_HOME before running the installer. The installer refuses to overwrite an existing directory; it is not an updater and does not silently pull changes over local work.
 
+For a safe manual validation sequence on clean Windows and Linux machines, including existing-directory protection and known test-coverage limits, see [the installation smoke-test checklist](docs/testing/INSTALLATION_SMOKE_TEST.md).
+
 After installation, use the installed CLI:
 
 ~~~bash
