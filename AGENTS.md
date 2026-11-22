@@ -29,7 +29,9 @@ Maintain a reusable, public, multi-user OCI Always Free A1 capacity monitor and 
 - Use an existing public subnet and existing Internet Gateway route; public IPv4 is currently required.
 - User-specific values belong only in per-user application configuration and the local OCI SDK profile; never commit them.
 - The new `oci-platform` CLI is a thin compatibility layer over `oci_free_watch.py`; preserve the existing engine and direct Python commands during gradual migration.
-- Keep `oci-platform setup` local-only: it must not contact OCI, create credentials, arm creation, or overwrite an existing config.
+- Keep `oci-platform setup` and `configure` local-only: they must not contact OCI, create credentials, or arm creation. Setup must never overwrite an existing config; configure must create a timestamped backup before updating one.
+- The configure wizard must always force `mode.creation_enabled=false` and clear the launch confirmation phrase, regardless of previous config contents.
+- Installer scripts must install into a new user-owned directory, refuse to overwrite existing directories, avoid administrator/root privileges, and never start a background service or enable VM creation.
 - The CLI must not display credentials or OCIDs in ordinary configuration summaries.
 - Preserve cross-platform process locking; do not reintroduce unconditional POSIX-only imports.
 - config.example.json must contain placeholders or generic defaults only.
@@ -60,6 +62,8 @@ Maintain a reusable, public, multi-user OCI Always Free A1 capacity monitor and 
    - oci-platform --help
    - oci-platform --version
    - bash -n oci-free (when changing the command wrapper)
+   - bash -n install.sh (when changing the Linux installer)
+   - Parse install.ps1 with PowerShell's parser (when changing the Windows installer)
    - ./oci-free test (when the local virtual environment is installed)
 6. Review the diff for hard-coded identifiers, secrets, unsafe defaults, and contradictions.
 7. Update README.md and docs/agents/PROJECT_MEMORY.md when behavior or architecture changes.
@@ -83,6 +87,7 @@ Maintain a reusable, public, multi-user OCI Always Free A1 capacity monitor and 
 - Keep AGENTS.md concise and operational.
 - Put durable architecture and decisions in docs/agents/PROJECT_MEMORY.md.
 - Record milestones and handoffs in docs/agents/WORKLOG.md.
+- Keep root-level AI_HANDOFF.md current at every session closeout; it is the first continuation document for the next AI session.
 - Use docs/agents/START_PROMPT.md as the generic prompt users can give any coding agent.
 - CLAUDE.md and GEMINI.md should remain thin wrappers around the shared instructions.
 - Do not store personal user preferences, account identifiers, secrets, or deployment-specific values in committed agent memory.

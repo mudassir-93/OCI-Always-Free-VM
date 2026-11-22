@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - main
+      - "feat/**"
 
 permissions:
   contents: read
@@ -36,6 +37,31 @@ jobs:
 
       - name: Compile application
         run: python -m compileall -q oci_platform oci_free_watch.py
+
+      - name: Validate Linux installer syntax
+        if: runner.os == 'Linux'
+        run: bash -n install.sh
+
+      - name: Validate PowerShell installer syntax
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $parseErrors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            (Join-Path $PWD "install.ps1"),
+            [ref]$tokens,
+            [ref]$parseErrors
+          ) | Out-Null
+          if ($parseErrors.Count -gt 0) {
+            $parseErrors | ForEach-Object { Write-Error $_ }
+            exit 1
+          }
+
+      - name: Run Windows installer safety integration tests
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./tests/test_installers_windows.ps1
 
       - name: Run offline tests
         run: python -m unittest discover -s tests -v

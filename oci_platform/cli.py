@@ -8,8 +8,11 @@ from __future__ import annotations
 import argparse
 import configparser
 import json
+import math
 import os
+import shutil
 import sys
+from datetime import datetime
 from importlib.resources import files
 from pathlib import Path
 from typing import Any
@@ -77,6 +80,265 @@ def initialize_config(path: Path) -> bool:
     return True
 
 
+def _ask(prompt: str, default: str = "", *, required: bool = False) -> str:
+    suffix = f" [{default}]" if default else ""
+    while True:
+        value = input(f"{prompt}{suffix}: ").strip()
+        if not value:
+            value = default
+        if value or not required:
+            return value
+        print("This value is required.")
+
+
+def _ask_yes_no(prompt: str, default: bool = False) -> bool:
+    hint = "Y/n" if default else "y/N"
+    while True:
+        value = input(f"{prompt} ({hint}): ").strip().lower()
+        if not value:
+            return default
+        if value in {"y", "yes"}:
+            return True
+        if value in {"n", "no"}:
+            return False
+        print("Please answer yes or no.")
+
+
+def _ask_number(prompt: str, default: str, *, integer: bool = False, minimum: float = 0) -> int | float:
+    while True:
+        raw = _ask(prompt, default, required=True)
+        try:
+            value = float(raw)
+            if not math.isfinite(value) or value < minimum:
+                raise ValueError
+            if integer:
+                if not value.is_integer():
+                    raise ValueError
+                return int(value)
+            return value
+        except ValueError:
+            qualifier = f"whole number >= {minimum:g}" if integer else f"number >= {minimum:g}"
+            print(f"Enter a {qualifier}.")
+
+
+def _configure_interactively(config_path: Path) -> int:
+    """Collect local settings only. Never contacts OCI or arms instance creation."""
+    config = read_config(config_path) if config_path.exists() else json.loads(
+        files("oci_platform").joinpath("templates", "config.example.json").read_text(encoding="utf-8")
+    )
+    if not config_path.exists():
+        state_dir = default_state_dir()
+        config.setdefault("paths", {})["log_file"] = str(state_dir / "logs" / "oci-free-watch.log")
+        config["paths"]["state_file"] = str(state_dir / "state" / "state.json")
+
+    print("\nOCI Automation Platform — guided local configuration")
+    print("This wizard only edits your local config. It does not call OCI or create cloud resources.")
+    print("The account must remain Free Tier; paid resources are disabled by policy.\n")
+
+    if not _ask_yes_no("Do you confirm this tenancy is on OCI Free Tier (not upgraded to Paid)?"):
+        print("Stopped without changing configuration. Check your OCI account plan first.")
+        return 2
+
+    oci = config.setdefault("oci", {})
+    account = config.setdefault("account", {})
+    target = config.setdefault("target", {})
+    mode = config.setdefault("mode", {})
+
+    oci["config_file"] = str(Path(_ask(
+        "OCI SDK config file",
+        str(Path(oci.get("config_file", "~/.oci/config")).expanduser()),
+        required=True,
+    )).expanduser())
+    oci["profile"] = _ask("OCI profile name", str(oci.get("profile", "DEFAULT")), required=True)
+
+    home_region = _ask("Tenancy home region (e.g. us-phoenix-1)", str(account.get("home_region", "")), required=True)
+    target_region = _ask("Target region (must equal home region)", str(target.get("region") or home_region), required=True)
+    if target_region != home_region:
+        print("Stopped: Always Free A1 target region must match the tenancy home region.")
+        return 2
+
+    account["account_type"] = "FREE_TIER"
+    account["free_tier_only_confirmed"] = True
+    account["allow_paid_resources"] = False
+    account["home_region"] = home_region
+    account["a1_free_max_ocpu"] = _ask_number(
+        "Verified A1 OCPU policy cap", str(account.get("a1_free_max_ocpu", 2)), minimum=0.000001
+    )
+    account["a1_free_max_memory_gb"] = _ask_number(
+        "Verified A1 memory policy cap in GB", str(account.get("a1_free_max_memory_gb", 12)), minimum=0.000001
+    )
+    account["combined_free_volume_gb"] = _ask_number(
+        "Verified combined boot + block volume allowance in GB",
+        str(account.get("combined_free_volume_gb", 200)), integer=True, minimum=1,
+    )
+    account["monthly_a1_ocpu_hours"] = _ask_number(
+        "Monthly A1 OCPU-hour budget", str(account.get("monthly_a1_ocpu_hours", 1500))
+    )
+    account["monthly_a1_memory_gb_hours"] = _ask_number(
+        "Monthly A1 GB-hour budget", str(account.get("monthly_a1_memory_gb_hours", 9000))
+    )
+    account["other_monthly_a1_ocpu_hours"] = _ask_number(
+        "A1 OCPU-hours already consumed this month", str(account.get("other_monthly_a1_ocpu_hours", 0))
+    )
+    account["other_monthly_a1_memory_gb_hours"] = _ask_number(
+        "A1 GB-hours already consumed this month", str(account.get("other_monthly_a1_memory_gb_hours", 0))
+    )
+    account["current_month_usage_reviewed"] = _ask_yes_no(
+        "Have you reviewed current-month A1 compute and storage usage in OCI Cost Analysis?",
+        account.get("current_month_usage_reviewed") is True,
+    )
+
+    target["region"] = target_region
+    target["availability_domain"] = _ask(
+        "Availability Domain name", str(target.get("availability_domain", "")), required=True
+    )
+    target["vcn_ocid"] = _ask("Existing VCN OCID", str(target.get("vcn_ocid", "")), required=True)
+    if not target["vcn_ocid"].startswith("ocid1.vcn."):
+        print("The VCN value must be an OCI VCN OCID; no changes were saved.")
+        return 2
+    target["subnet_ocid"] = _ask("Existing public subnet OCID (optional)", str(target.get("subnet_ocid", "")))
+    if target["subnet_ocid"] and not target["subnet_ocid"].startswith("ocid1.subnet."):
+        print("The subnet value must be an OCI subnet OCID; no changes were saved.")
+        return 2
+    target["display_name"] = _ask("Instance display name", str(target.get("display_name", "oci-a1-free-instance")), required=True)
+
+    for key, prompt, default in (
+        ("ocpus", "Requested OCPU (within your verified free allowance)", str(target.get("ocpus", 2))),
+        ("memory_gb", "Requested RAM in GB (within your verified free allowance)", str(target.get("memory_gb", 4))),
+        ("boot_volume_size_gb", "Boot volume size in GB (within your verified storage allowance)", str(target.get("boot_volume_size_gb", 150))),
+    ):
+        while True:
+            raw = _ask(prompt, default, required=True)
+            try:
+                number = float(raw)
+                if not number.is_integer() or number <= 0:
+                    raise ValueError
+                target[key] = int(number)
+                break
+            except ValueError:
+                print("Enter a positive whole number.")
+
+    if target["ocpus"] > float(account.get("a1_free_max_ocpu", 2)):
+        print("Requested OCPU exceeds the configured Free Tier allowance; no changes were saved.")
+        return 2
+    if target["memory_gb"] > float(account.get("a1_free_max_memory_gb", 12)):
+        print("Requested RAM exceeds the configured Free Tier allowance; no changes were saved.")
+        return 2
+    if target["boot_volume_size_gb"] < 50:
+        print("OCI boot volume must be at least 50 GB; no changes were saved.")
+        return 2
+    if target["boot_volume_size_gb"] > int(account.get("combined_free_volume_gb", 200)):
+        print("Boot volume exceeds the configured combined storage allowance; no changes were saved.")
+        return 2
+
+    target["shape"] = "VM.Standard.A1.Flex"
+    target["operating_system"] = "Canonical Ubuntu"
+    target["operating_system_version"] = "24.04"
+    target["boot_volume_vpus_per_gb"] = _ask_number(
+        "Boot volume performance in VPUs per GB (this release supports exactly 10)",
+        str(target.get("boot_volume_vpus_per_gb", 10)),
+        integer=True, minimum=10,
+    )
+    if target["boot_volume_vpus_per_gb"] != 10:
+        print("This release supports exactly 10 VPUs per GB; no changes were saved.")
+        return 2
+    target["assign_public_ip"] = _ask_yes_no(
+        "Assign a public IPv4 address? (required by the current public-subnet workflow)",
+        target.get("assign_public_ip") is True,
+    )
+    if not target["assign_public_ip"]:
+        print("This release requires a public IPv4 address for its supported SSH workflow; no changes were saved.")
+        return 2
+    ssh_public_key_path = Path(_ask(
+        "Path to your SSH PUBLIC key file (never a private key)",
+        str(Path(target.get("ssh_public_key_file", "~/.ssh/id_ed25519.pub")).expanduser()),
+        required=True,
+    )).expanduser()
+    try:
+        ssh_public_key = ssh_public_key_path.read_text(encoding="utf-8").strip()
+    except OSError:
+        print(f"SSH public key file is not readable: {ssh_public_key_path}; no changes were saved.")
+        return 2
+    if not ssh_public_key.startswith(("ssh-ed25519 ", "ssh-rsa ", "ecdsa-sha2-")):
+        print("The selected file does not look like an OpenSSH public key; no changes were saved.")
+        return 2
+    target["ssh_public_key_file"] = str(ssh_public_key_path)
+    target["image_ocid"] = _ask("Pinned Ubuntu 24.04 ARM64 image OCID", str(target.get("image_ocid", "")), required=True)
+    if not target["image_ocid"].startswith("ocid1.image."):
+        print("The image value must be an OCI image OCID; no changes were saved.")
+        return 2
+    target["image_console_always_free_confirmed"] = _ask_yes_no(
+        "Have you personally verified this exact image is marked 'Always Free Eligible' in OCI Console?",
+        target.get("image_console_always_free_confirmed") is True,
+    )
+
+    mode["capacity_poll_minutes"] = _ask_number(
+        "Capacity polling interval in minutes", str(mode.get("capacity_poll_minutes", 20)),
+        integer=True, minimum=1,
+    )
+    mode["max_backoff_minutes"] = _ask_number(
+        "Maximum retry backoff in minutes", str(mode.get("max_backoff_minutes", 180)),
+        integer=True, minimum=1,
+    )
+    mode["max_attempts"] = _ask_number(
+        "Maximum monitoring attempts (0 means unlimited)", str(mode.get("max_attempts", 0)),
+        integer=True, minimum=0,
+    )
+    mode["instance_wait_timeout_minutes"] = _ask_number(
+        "Instance readiness timeout in minutes", str(mode.get("instance_wait_timeout_minutes", 40)),
+        integer=True, minimum=1,
+    )
+    mode["instance_poll_seconds"] = _ask_number(
+        "Instance readiness poll interval in seconds", str(mode.get("instance_poll_seconds", 20)),
+        integer=True, minimum=1,
+    )
+
+    paths = config.setdefault("paths", {})
+    log_value = _ask("Log file path", str(paths.get("log_file", "")))
+    state_value = _ask("State file path", str(paths.get("state_file", "")))
+    paths["log_file"] = str(Path(log_value).expanduser()) if log_value else ""
+    paths["state_file"] = str(Path(state_value).expanduser()) if state_value else ""
+    logging = config.setdefault("logging", {})
+    log_level = _ask("Log level (DEBUG/INFO/WARNING/ERROR)", str(logging.get("level", "INFO"))).upper()
+    if log_level not in {"DEBUG", "INFO", "WARNING", "ERROR"}:
+        print("Invalid log level; no changes were saved.")
+        return 2
+    logging["level"] = log_level
+
+    # This wizard must never arm a real cloud launch.
+    mode["creation_enabled"] = False
+    mode["creation_confirmation"] = ""
+
+    print("\nConfiguration review")
+    print(f"  OCI profile: {oci['profile']}")
+    print(f"  Region / AD: {target['region']} / {target['availability_domain']}")
+    print(f"  Shape: {target['shape']} — {target['ocpus']} OCPU / {target['memory_gb']} GB RAM")
+    print(f"  Boot volume: {target['boot_volume_size_gb']} GB")
+    print(f"  Current-month usage reviewed: {account['current_month_usage_reviewed']}")
+    print(f"  Image Always Free label confirmed: {target['image_console_always_free_confirmed']}")
+    print("  VM creation: DISABLED")
+    if not _ask_yes_no("Save these settings?", False):
+        print("Cancelled. Existing configuration was not changed.")
+        return 1
+
+    backup_path = None
+    if config_path.exists():
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S-%f")
+        backup_path = config_path.with_name(f"{config_path.name}.{stamp}.bak")
+        shutil.copy2(config_path, backup_path)
+        if os.name == "posix":
+            backup_path.chmod(0o600)
+    write_config(config_path, config)
+    for configured_path in (paths.get("log_file"), paths.get("state_file")):
+        if configured_path:
+            Path(configured_path).expanduser().parent.mkdir(parents=True, exist_ok=True)
+    print(f"Saved configuration: {config_path}")
+    if backup_path:
+        print(f"Previous configuration backup: {backup_path}")
+    print("Creation remains disabled. Run 'oci-platform doctor' and 'oci-platform vm audit' next.")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="oci-platform",
@@ -93,6 +355,7 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
 
     commands.add_parser("setup", help="Create initial user configuration without contacting OCI")
+    commands.add_parser("configure", help="Interactively configure OCI and target settings (local only)")
     commands.add_parser("doctor", help="Check local runtime, SDK and configuration readiness")
 
     config_cmd = commands.add_parser("config", help="Inspect and validate application configuration")
@@ -248,6 +511,9 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 print(f"Existing configuration preserved: {config_path}")
             return 0
+
+        if args.command == "configure":
+            return _configure_interactively(config_path)
 
         if args.command == "doctor":
             return _run_doctor(config_path)

@@ -130,3 +130,16 @@ The first implementation milestone is being developed on `feat/cli-v1-foundation
 - The engine now accepts an argv list for safe in-process CLI integration and uses platform-specific non-blocking process locking instead of importing POSIX `fcntl` unconditionally.
 - GitHub Actions is configured to test Windows and Linux on Python 3.11 and 3.12. CI results must be checked before considering this milestone complete.
 - One-command GitHub installer, guided setup wizard, automatic update/rollback, and dashboard are not part of this first foundation milestone.
+
+## CLI V1 Milestone 2 — installer and guided configuration (in progress)
+
+- Developed on stacked branch `feat/cli-v1-installer-wizard`, based on the CLI foundation branch. It must not be merged ahead of its dependency.
+- Added `oci-platform configure`, an interactive local-only wizard for OCI SDK config/profile, Free Tier attestation, home region, existing network identifiers, A1 resources, usage budgets, SSH public-key path, pinned Ubuntu image, retry settings, log/state paths, and log level.
+- The wizard rejects a target region different from the tenancy home region and validates requested resources against the operator-entered local policy caps.
+- The wizard always forces creation disabled and clears the confirmation phrase, even if an existing config was armed. It backs up an existing config before saving.
+- Added `install.ps1` and `install.sh`. They clone the default branch into a new user-owned directory, create an isolated virtual environment, install the CLI, and run local setup. They refuse to overwrite an existing directory and do not require admin/root privileges.
+- Installer scripts do not call OCI, create cloud resources, add PATH entries, install systemd services, or arm creation.
+- Added offline tests for the wizard's successful configuration path and refusal when the operator does not confirm Free Tier.
+- Added CI syntax validation for both installer scripts.
+- The installers become usable from the public default branch only after this PR and the CLI foundation dependency are reviewed and merged.
+- No live OCI operations or production deployments were performed.

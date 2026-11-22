@@ -132,6 +132,155 @@ class CliSetupTests(unittest.TestCase):
             with patch.dict(os.environ, {"OCI_PLATFORM_CONFIG": str(expected)}):
                 self.assertEqual(default_config_path(), expected)
 
+    def test_interactive_configure_saves_free_tier_settings_creation_disabled(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config_path = root / "config.json"
+            ssh_key = root / "id_ed25519.pub"
+            ssh_key.write_text("ssh-ed25519 AAAATEST example", encoding="utf-8")
+            def answer(prompt):
+                if "Free Tier" in prompt or "current-month" in prompt or "Always Free Eligible" in prompt or "Save these settings" in prompt:
+                    return "y"
+                if "Tenancy home region" in prompt:
+                    return "us-phoenix-1"
+                if "Availability Domain" in prompt:
+                    return "example-ad"
+                if "Existing VCN OCID" in prompt:
+                    return "ocid1.vcn.example"
+                if "SSH PUBLIC key" in prompt:
+                    return str(ssh_key)
+                if "Pinned Ubuntu" in prompt:
+                    return "ocid1.image.example"
+                return ""
+
+            with patch("builtins.input", side_effect=answer), patch(
+                "oci_platform.cli.default_state_dir", return_value=root / "state"
+            ):
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    result = main(["--config", str(config_path), "configure"])
+            self.assertEqual(result, 0)
+            config = read_config(config_path)
+            self.assertEqual(config["account"]["home_region"], "us-phoenix-1")
+            self.assertEqual(config["target"]["region"], "us-phoenix-1")
+            self.assertEqual(config["target"]["ocpus"], 2)
+            self.assertEqual(config["target"]["memory_gb"], 4)
+            self.assertFalse(config["account"]["allow_paid_resources"])
+            self.assertTrue(config["account"]["free_tier_only_confirmed"])
+            self.assertFalse(config["mode"]["creation_enabled"])
+            self.assertEqual(config["mode"]["creation_confirmation"], "")
+            self.assertIn("VM creation: DISABLED", output.getvalue())
+
+    def test_interactive_configure_refuses_non_free_tier_without_writing(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config_path = Path(temp) / "config.json"
+            with patch("builtins.input", side_effect=["n"]):
+                result = main(["--config", str(config_path), "configure"])
+            self.assertEqual(result, 2)
+            self.assertFalse(config_path.exists())
+
+    def test_interactive_configure_rejects_region_outside_home_region(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config_path = Path(temp) / "config.json"
+
+            def answer(prompt):
+                if "Free Tier" in prompt:
+                    return "y"
+                if "Tenancy home region" in prompt:
+                    return "us-phoenix-1"
+                if "Target region" in prompt:
+                    return "us-ashburn-1"
+                return ""
+
+            with patch("builtins.input", side_effect=answer):
+                result = main(["--config", str(config_path), "configure"])
+
+            self.assertEqual(result, 2)
+            self.assertFalse(config_path.exists())
+
+    def test_interactive_configure_backs_up_existing_config_and_disarms_creation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config_path = root / "config.json"
+            state_dir = root / "state"
+            with patch("oci_platform.cli.default_state_dir", return_value=state_dir):
+                self.assertTrue(initialize_config(config_path))
+            original = read_config(config_path)
+            original["mode"]["creation_enabled"] = True
+            original["mode"]["creation_confirmation"] = "LAUNCH_ONE_ALWAYS_FREE_INSTANCE"
+            write_config(config_path, original)
+
+            ssh_key = root / "id_ed25519.pub"
+            ssh_key.write_text("ssh-ed25519 AAAATEST example", encoding="utf-8")
+            def answer(prompt):
+                if "Free Tier" in prompt or "current-month" in prompt or "Always Free Eligible" in prompt or "Save these settings" in prompt:
+                    return "y"
+                if "Tenancy home region" in prompt:
+                    return "us-phoenix-1"
+                if "Availability Domain" in prompt:
+                    return "example-ad"
+                if "Existing VCN OCID" in prompt:
+                    return "ocid1.vcn.example"
+                if "SSH PUBLIC key" in prompt:
+                    return str(ssh_key)
+                if "Pinned Ubuntu" in prompt:
+                    return "ocid1.image.example"
+                return ""
+
+            with patch("builtins.input", side_effect=answer), patch(
+                "oci_platform.cli.default_state_dir", return_value=state_dir
+            ):
+                result = main(["--config", str(config_path), "configure"])
+
+            self.assertEqual(result, 0)
+            updated = read_config(config_path)
+            self.assertFalse(updated["mode"]["creation_enabled"])
+            self.assertEqual(updated["mode"]["creation_confirmation"], "")
+            backups = list(root.glob("config.json.*.bak"))
+            self.assertEqual(len(backups), 1)
+            backup = read_config(backups[0])
+            self.assertTrue(backup["mode"]["creation_enabled"])
+            self.assertEqual(
+                backup["mode"]["creation_confirmation"],
+                "LAUNCH_ONE_ALWAYS_FREE_INSTANCE",
+            )
+
+
+    def test_interactive_configure_rejects_unsupported_boot_volume_performance(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config_path = root / "config.json"
+            ssh_key = root / "id_ed25519.pub"
+            ssh_key.write_text("ssh-ed25519 AAAATEST example", encoding="utf-8")
+
+            def answer(prompt):
+                if "Free Tier" in prompt or "current-month" in prompt or "Always Free Eligible" in prompt:
+                    return "y"
+                if "Tenancy home region" in prompt:
+                    return "us-phoenix-1"
+                if "Availability Domain" in prompt:
+                    return "example-ad"
+                if "Existing VCN OCID" in prompt:
+                    return "ocid1.vcn.example"
+                if "SSH PUBLIC key" in prompt:
+                    return str(ssh_key)
+                if "Pinned Ubuntu" in prompt:
+                    return "ocid1.image.example"
+                if "Boot volume performance" in prompt:
+                    return "20"
+                return ""
+
+            with patch("builtins.input", side_effect=answer), patch(
+                "oci_platform.cli.default_state_dir", return_value=root / "state"
+            ):
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    result = main(["--config", str(config_path), "configure"])
+
+            self.assertEqual(result, 2)
+            self.assertFalse(config_path.exists())
+            self.assertIn("supports exactly 10 VPUs per GB", output.getvalue())
+
 
 class CliEngineIntegrationTests(unittest.TestCase):
     def _valid_config(self, path: Path) -> None:

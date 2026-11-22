@@ -4,7 +4,7 @@
 [![Cross-platform CLI](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/cli-foundation.yml/badge.svg?branch=main)](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/cli-foundation.yml)
 
 
-A lightweight OCI automation application for monitoring Oracle Cloud Infrastructure Ampere A1 capacity and, only after explicit operator approval, requesting one configured Always Free A1 VM. The project is adding a cross-platform `oci-platform` CLI for setup, profile/configuration management, diagnostics, and day-to-day automation control. It uses the official OCI Python SDK.
+A lightweight cross-platform automation tool for acquiring an Oracle Cloud Infrastructure (OCI) Always Free Ampere A1 VM. It monitors A1 host capacity and, only after explicit operator approval and live safety checks, requests one configured VM. The `oci-platform` CLI manages installation, per-user configuration, diagnostics, and monitoring on Windows and Linux using the official OCI Python SDK.
 
 **Default behavior is read-only.** The project never creates or modifies VCNs, subnets, gateways, route tables, security lists, NSGs, reserved IPs, or existing compute instances.
 
@@ -59,6 +59,8 @@ The example config uses conservative policy caps. The live Limits API check is s
 ├── oci_platform/
 │   ├── cli.py
 │   └── templates/config.example.json
+├── install.ps1
+├── install.sh
 ├── pyproject.toml
 ├── oci-free
 ├── requirements.txt
@@ -94,7 +96,7 @@ The example config uses conservative policy caps. The live Limits API check is s
 
 ## Cross-platform CLI — V1 foundation
 
-The repository now includes the first version of `oci-platform`. This is the CLI foundation, not yet the one-command GitHub installer. The installer and guided configuration wizard are planned for a later milestone.
+The repository now includes the cross-platform `oci-platform` CLI foundation, a local configuration wizard, and safe first-install scripts for Windows and Linux. These changes are being developed in separate reviewable milestones; the installers become available from the default branch only after the corresponding pull requests are merged.
 
 Install the current checkout in an isolated virtual environment:
 
@@ -143,6 +145,63 @@ The `--config` global option must appear before the command, for example `oci-pl
 VM audit and one-shot checks are read-only. Monitoring is read-only unless the operator deliberately supplies `vm monitor --enable-create`; even then, the existing engine still requires both local creation settings and all live safety checks. The CLI does not bypass or replace those protections.
 
 Configuration defaults are stored under the user's application configuration directory; state and logs are stored under the user's application state directory. The CLI never prints credentials or OCIDs in its configuration summary. Existing direct Python commands and the Linux `oci-free` wrapper remain available during the gradual transition.
+
+## One-command first installation
+
+The installer scripts download the repository into a new user-owned directory, create an isolated Python virtual environment, install the CLI, and create a creation-disabled starter config. They do not use sudo/administrator elevation, contact OCI, change cloud resources, or arm VM creation.
+
+**Windows PowerShell** (download the script first, then inspect/run it):
+
+~~~powershell
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/mudassir-93/OCI-Always-Free-VM/main/install.ps1" -OutFile install.ps1
+Get-Content .\install.ps1
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\install.ps1
+~~~
+
+**Linux**:
+
+~~~bash
+curl -fsSLO https://raw.githubusercontent.com/mudassir-93/OCI-Always-Free-VM/main/install.sh
+less install.sh
+bash install.sh
+~~~
+
+Requirements: Git and Python 3.11 or newer. The default install directory is ~/oci-automation-platform (Windows: your home directory). To select a different new directory, set OCI_PLATFORM_HOME before running the installer. The installer refuses to overwrite an existing directory; it is not an updater and does not silently pull changes over local work.
+
+For a safe manual validation sequence on clean Windows and Linux machines, including existing-directory protection and known test-coverage limits, see [the installation smoke-test checklist](docs/testing/INSTALLATION_SMOKE_TEST.md).
+
+After installation, use the installed CLI:
+
+~~~bash
+# Linux
+~/oci-automation-platform/.venv/bin/oci-platform configure
+~/oci-automation-platform/.venv/bin/oci-platform doctor
+~/oci-automation-platform/.venv/bin/oci-platform vm audit
+~~~
+
+~~~powershell
+# Windows PowerShell
+& "$HOME\oci-automation-platform\.venv\Scripts\oci-platform.exe" configure
+& "$HOME\oci-automation-platform\.venv\Scripts\oci-platform.exe" doctor
+& "$HOME\oci-automation-platform\.venv\Scripts\oci-platform.exe" vm audit
+~~~
+
+The installer deliberately does not add the application to the system PATH or install a background service. This keeps installation reversible and avoids changing machine-wide settings.
+
+## Guided configuration wizard
+
+Run oci-platform configure after installation. The wizard asks for your local OCI SDK config path and profile, tenancy home region, availability domain, existing VCN/subnet, target shape resources, SSH public-key path, pinned Ubuntu image OCID, and the manual Always Free image-label and current-month usage confirmations.
+
+- The wizard is local-only; it does not call OCI APIs.
+- It refuses a target region that differs from the tenancy home region.
+- It keeps allow_paid_resources=false and account_type=FREE_TIER.
+- It enforces the configured local A1 and storage caps before saving.
+- It creates a timestamped backup before updating an existing config.
+- It never asks for or stores your OCI private API key or SSH private key.
+- It always forces mode.creation_enabled=false and clears the creation confirmation phrase. It cannot arm a launch.
+
+After configuration, run oci-platform doctor, review the output, and then use oci-platform vm audit. Audit is read-only. Review the live tenancy and billing status yourself; a successful local wizard is not a guarantee of Always Free eligibility or zero charges.
 
 ## Quick start
 
