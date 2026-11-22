@@ -1,9 +1,34 @@
+# Local account-specific configuration and runtime data
 config.json
+config.*.json
+!config.example.json
+.env
+.env.*
+*.env
+
+# Credentials and key material
+*.pem
+*.key
+*.p12
+*.pfx
+*.pub
+
+# Python environments and generated files
 .venv/
+venv/
 __pycache__/
 *.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Runtime output
 logs/
 state/
 *.lock
-.pytest_cache/
-.coverage
+
+# Editor / OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
