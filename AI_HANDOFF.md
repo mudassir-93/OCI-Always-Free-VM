@@ -144,3 +144,13 @@ Before ending a work session:
 - Main SHA is unchanged at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`.
 - The remaining external release gate is actual clean-workstation installation on Windows and Linux. Current CI parses the PowerShell installer but does not execute it end-to-end; POSIX integration tests cover clone failure, venv failure, and existing-directory protection.
 - No cloud resources, OCI tenancy, billing settings, EC2, or production deployment were touched. No PR merge was performed.
+
+
+## Windows installer integration update — 2026-11-22
+
+- Added an executable PowerShell integration test to the Windows GitHub Actions matrix. It runs the actual `install.ps1` against temporary paths, confirms an existing destination and sentinel file are preserved, and simulates a failing Git clone to confirm cleanup of only the new installer-owned directory.
+- The first CI attempt showed both assertions passing but the script process ended with exit code 1 due to the simulated native Git failure code remaining in PowerShell. Added explicit `exit 0` after successful assertions.
+- Code HEAD `6af29f358c0b8d1c880d76d4da265e8da32b3e68` passed all four OS/Python CLI jobs and both Python-check jobs.
+- Smoke-test documentation now reflects Windows integration coverage. Clean successful install on actual Windows and Linux workstations remains unverified and is still a release gate.
+- Latest tracker/documentation changes are triggering another CI run; verify exact current HEAD before claiming green.
+- No production, OCI tenancy, billing, VM launch, or main-branch changes. Keep both PRs unmerged until explicit approval.
