@@ -152,3 +152,13 @@ For each future milestone, append:
 - The checklist explicitly requires fresh Windows and Linux workstation tests before calling the installer milestone release-ready.
 - No installer was executed on the user's machine; no live OCI calls, VM launch, production changes, or merge occurred.
 - Next: add wizard regression coverage for backup creation and forcibly clearing previously armed creation settings; then check CI for the new documentation commits and arrange fresh workstation validation after the PRs are merged.
+
+
+## 2026-11-22 — Installer venv-failure regression coverage
+
+- Added a POSIX installer integration test that simulates virtual-environment creation failing after the destination directory has been reserved and Git clone has succeeded; it asserts the incomplete install directory is removed.
+- The first test fixture had an incorrectly escaped shebang/newline and failed in CI. Corrected the fixture and pushed the follow-up commit; this was a test-fixture defect, not an installer defect.
+- At HEAD `44040482ddbf711ce843caad3351f27b3863a9c4`, Python checks passed on Python 3.11 and 3.12. The CLI foundation matrix passed both Ubuntu jobs; both Windows jobs were still running at last check.
+- Existing wizard tests already verify timestamped backup creation and that a previously armed creation flag/confirmation are forcibly cleared. No duplicate tests were added.
+- No fresh workstation installation, live OCI call, VM launch, production change, or PR merge occurred. `main` remains at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`.
+- Next: verify both Windows jobs, then keep fresh Windows/Linux workstation installation as the remaining manual release gate.
