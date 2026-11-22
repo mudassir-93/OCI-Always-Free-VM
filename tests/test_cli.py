@@ -179,6 +179,25 @@ class CliSetupTests(unittest.TestCase):
             self.assertEqual(result, 2)
             self.assertFalse(config_path.exists())
 
+    def test_interactive_configure_rejects_region_outside_home_region(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config_path = Path(temp) / "config.json"
+
+            def answer(prompt):
+                if "Free Tier" in prompt:
+                    return "y"
+                if "Tenancy home region" in prompt:
+                    return "us-phoenix-1"
+                if "Target region" in prompt:
+                    return "us-ashburn-1"
+                return ""
+
+            with patch("builtins.input", side_effect=answer):
+                result = main(["--config", str(config_path), "configure"])
+
+            self.assertEqual(result, 2)
+            self.assertFalse(config_path.exists())
+
     def test_interactive_configure_backs_up_existing_config_and_disarms_creation(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
