@@ -96,3 +96,15 @@ For each future milestone, append:
 - Not tested: running installer on a real fresh Windows or Linux workstation, and any live OCI API interaction.
 - Safety review: no credentials or account-specific OCIDs added; no cloud resources or production deployments accessed; no instance launch path enabled by installer/wizard.
 - Next: fix CI findings, inspect the final diff, open a draft stacked PR against `feat/cli-v1-foundation`, then manually test installation on the user's separate machine after both PRs are merged.
+
+## 2026-11-22 — Persistent AI session handoff and Milestone 2 CI verification
+
+- Added root-level `AI_HANDOFF.md` as the concise, durable continuation record for future ChatGPT, Claude Code, Codex, Gemini, and other coding-agent sessions.
+- Handoff records product objective, non-negotiable safety rules, current branches and PR links/states, dependency ordering, latest checked HEAD, CI evidence, completed milestones, limitations, exact next actions, and session closeout requirements.
+- Updated `AGENTS.md` and `docs/agents/START_PROMPT.md` so agents must read and maintain `AI_HANDOFF.md`.
+- Re-checked PR #5 and PR #6: both remain OPEN and DRAFT; neither is merged. PR #6 remains stacked on `feat/cli-v1-foundation`.
+- Re-checked Milestone 2 HEAD `1f65967a3bd128bd7e55c1314b219a068abd430d`: GitHub Actions `CLI foundation` and `Python checks` both completed successfully.
+- The latest checks validate the Windows/Linux × Python 3.11/3.12 matrix, offline test suite, installer syntax parsing, and CLI/package checks as configured by CI.
+- No local fresh-workstation installation, live OCI API operation, VM launch, or production deployment test was performed.
+- Safety: `main` remains unchanged by this milestone; no PR was merged and no live cloud or production resource was touched.
+- Next: perform a focused review of installer failure handling and wizard edge cases on the feature branch; report concrete findings and fixes. Then ask the user to approve PR #5 before merging. Keep PR #6 stacked until #5 is accepted.
