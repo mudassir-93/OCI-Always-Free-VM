@@ -1,9 +1,10 @@
 # OCI Always Free A1 VM Automation
 
 [![Python checks](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/tests.yml)
+[![Cross-platform CLI](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/cli-foundation.yml/badge.svg?branch=main)](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/cli-foundation.yml)
 
 
-A lightweight Python application for monitoring OCI Ampere A1 host capacity and, only after explicit operator approval, requesting one configured A1 VM. It uses the official OCI Python SDK.
+A lightweight OCI automation application for monitoring Oracle Cloud Infrastructure Ampere A1 capacity and, only after explicit operator approval, requesting one configured Always Free A1 VM. The project is adding a cross-platform `oci-platform` CLI for setup, profile/configuration management, diagnostics, and day-to-day automation control. It uses the official OCI Python SDK.
 
 **Default behavior is read-only.** The project never creates or modifies VCNs, subnets, gateways, route tables, security lists, NSGs, reserved IPs, or existing compute instances.
 
@@ -31,7 +32,11 @@ The application does not:
 - Create or alter network resources or ingress rules.
 - Terminate, resize, or modify existing instances.
 - Guarantee Always Free eligibility, zero billing, host capacity, or a successful launch.
-- Run directly on Windows. Run it on Linux; Windows can be used for editing and SSH access.
+- Guarantee Always Free eligibility, zero billing, host capacity, or a successful launch.
+- Provision or modify existing network resources.
+- Terminate, resize, or modify existing instances.
+
+The new `oci-platform` CLI and Python engine target Windows and Linux. The legacy Bash helper and systemd service are Linux-only.
 
 The program requires an explicit local Free Tier attestation. OCI APIs used by this application do not provide a definitive billing-plan status. Keep your actual account status and Billing & Cost Management under manual review. The app's safeguards cannot prevent charges caused by account upgrades, unrelated resources, changed policies, or incorrect operator input.
 
@@ -54,10 +59,16 @@ The example config uses conservative policy caps. The live Limits API check is s
 ├── README.md
 ├── config.example.json
 ├── oci_free_watch.py
+├── oci_platform/
+│   ├── cli.py
+│   └── templates/config.example.json
+├── pyproject.toml
 ├── oci-free
 ├── requirements.txt
 ├── systemd/oci-free-watch.service
-├── tests/test_policy.py
+├── tests/
+│   ├── test_policy.py
+│   └── test_cli.py
 ├── SECURITY.md
 ├── .env.example
 ├── .claude/commands/work.md
@@ -69,18 +80,72 @@ The example config uses conservative policy caps. The live Limits API check is s
 │       └── WORKLOG.md
 └── .github/
     ├── copilot-instructions.md
-    └── workflows/tests.yml
+    └── workflows/
+        ├── tests.yml
+        └── cli-foundation.yml
 ~~~
 
 ## Requirements
 
-- Linux host; Ubuntu is recommended.
+- Windows or Linux for the new Python CLI; Ubuntu is recommended for the legacy systemd deployment.
 - Python 3.11 or newer.
 - Network access to OCI APIs.
 - OCI API signing-key authentication.
 - An OCI identity with least-privilege read permissions; launch mode requires additional compute/VNIC/volume permissions.
 - An existing VCN, public subnet, Internet Gateway route, and SSH public key.
 - No Docker, Node.js, Redis, PostgreSQL, or database service.
+
+## Cross-platform CLI — V1 foundation
+
+The repository now includes the first version of `oci-platform`. This is the CLI foundation, not yet the one-command GitHub installer. The installer and guided configuration wizard are planned for a later milestone.
+
+Install the current checkout in an isolated virtual environment:
+
+~~~bash
+python -m venv .venv
+# Linux/macOS:
+source .venv/bin/activate
+# Windows PowerShell:
+# .venv\\Scripts\\Activate.ps1
+
+python -m pip install --upgrade pip
+python -m pip install -e .
+~~~
+
+Start with local setup and diagnostics:
+
+~~~bash
+oci-platform --version
+oci-platform setup
+oci-platform doctor
+oci-platform config show
+oci-platform config validate
+~~~
+
+`setup` creates a per-user config from the generic template only when no config exists. It does not contact OCI, create credentials, arm VM creation, or overwrite an existing config. The initial template is intentionally incomplete: configure your own OCI values before validation can pass.
+
+Manage OCI SDK profile names without displaying credentials:
+
+~~~bash
+oci-platform profile list
+oci-platform profile use DEFAULT
+~~~
+
+Run the existing automation through the new command hierarchy:
+
+~~~bash
+oci-platform vm audit
+oci-platform vm once
+oci-platform vm monitor
+oci-platform status
+oci-platform logs --lines 100
+~~~
+
+The `--config` global option must appear before the command, for example `oci-platform --config /path/to/config.json vm audit`.
+
+VM audit and one-shot checks are read-only. Monitoring is read-only unless the operator deliberately supplies `vm monitor --enable-create`; even then, the existing engine still requires both local creation settings and all live safety checks. The CLI does not bypass or replace those protections.
+
+Configuration defaults are stored under the user's application configuration directory; state and logs are stored under the user's application state directory. The CLI never prints credentials or OCIDs in its configuration summary. Existing direct Python commands and the Linux `oci-free` wrapper remain available during the gradual transition.
 
 ## Quick start
 
@@ -205,7 +270,10 @@ TELEGRAM_CHAT_ID=YOUR_CHAT_ID
 
 The systemd unit loads this file. Never place notification credentials in source code or Git.
 
-## CLI reference
+## Legacy engine CLI reference
+
+The original Python entry point remains supported for backward compatibility. The new `oci-platform` commands are documented above.
+
 
 | Command | Effect |
 |---|---|
@@ -254,7 +322,7 @@ python -m py_compile oci_free_watch.py
 python -m unittest discover -s tests -v
 ~~~
 
-GitHub Actions runs the checks on pushes and pull requests.
+GitHub Actions runs the legacy checks and the new CLI foundation matrix on Windows and Linux with Python 3.11 and 3.12. Tests use local fixtures and do not require OCI credentials or contact a live tenancy.
 
 ## Security checklist
 
