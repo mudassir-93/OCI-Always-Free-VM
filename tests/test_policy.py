@@ -76,9 +76,6 @@ class PolicyTests(unittest.TestCase):
             app.check_static_free_tier_policy(self.account, self.target)
 
 
-if __name__ == "__main__":
-    unittest.main()
-
     def test_non_finite_cpu_is_rejected(self):
         self.target["ocpus"] = float("nan")
         with self.assertRaises(app.GuardError):
@@ -93,3 +90,7 @@ if __name__ == "__main__":
         self.account["monthly_a1_ocpu_hours"] = float("nan")
         with self.assertRaises(app.GuardError):
             app.check_static_free_tier_policy(self.account, self.target)
+
+
+if __name__ == "__main__":
+    unittest.main()
