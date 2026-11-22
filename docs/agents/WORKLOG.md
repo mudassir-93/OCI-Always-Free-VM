@@ -131,3 +131,14 @@ For each future milestone, append:
 - Python checks passed on Python 3.11 and 3.12 at this HEAD. CLI foundation matrix Linux jobs passed; Windows 3.11 and 3.12 were still in progress at last check.
 - No PR merged; `main` remains at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`. No live OCI calls, VM launch, or production changes.
 - Next: verify both Windows matrix jobs, inspect any errors, then finish the installer/configuration code review. Do not merge either PR without explicit approval.
+
+
+## 2026-11-22 — Wizard/engine policy alignment review
+
+- Reviewed the full installer and wizard changes against the existing engine's live preflight and safety policy.
+- Found a mismatch: the wizard accepted 10–120 boot-volume VPUs/GB, but the engine allows exactly 10. Updated the wizard to enforce exactly 10 before saving.
+- Added an offline regression test confirming that a requested 20 VPUs/GB is rejected and no config file is written.
+- Previous full Windows/Linux × Python 3.11/3.12 CI matrix passed at parent code HEAD `1b4c055cc4a8d08767cba347916b87690eb5971f`; fresh CI for the correction is pending.
+- PR #5 and #6 remain open/draft; PR #6 remains stacked on PR #5. No merge performed.
+- No live OCI API calls, VM launch, production deployment change, or modification to `main`.
+- Next: inspect fresh CI for the new HEAD, continue remaining config/installer edge-case review, and then request operator review before any merge.
