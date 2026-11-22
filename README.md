@@ -32,9 +32,6 @@ The application does not:
 - Create or alter network resources or ingress rules.
 - Terminate, resize, or modify existing instances.
 - Guarantee Always Free eligibility, zero billing, host capacity, or a successful launch.
-- Guarantee Always Free eligibility, zero billing, host capacity, or a successful launch.
-- Provision or modify existing network resources.
-- Terminate, resize, or modify existing instances.
 
 The new `oci-platform` CLI and Python engine target Windows and Linux. The legacy Bash helper and systemd service are Linux-only.
 
