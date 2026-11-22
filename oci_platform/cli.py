@@ -266,8 +266,10 @@ def _configure_interactively(config_path: Path) -> int:
     )
 
     paths = config.setdefault("paths", {})
-    paths["log_file"] = str(Path(_ask("Log file path", str(paths.get("log_file", "")))).expanduser())
-    paths["state_file"] = str(Path(_ask("State file path", str(paths.get("state_file", "")))).expanduser())
+    log_value = _ask("Log file path", str(paths.get("log_file", "")))
+    state_value = _ask("State file path", str(paths.get("state_file", "")))
+    paths["log_file"] = str(Path(log_value).expanduser()) if log_value else ""
+    paths["state_file"] = str(Path(state_value).expanduser()) if state_value else ""
     logging = config.setdefault("logging", {})
     log_level = _ask("Log level (DEBUG/INFO/WARNING/ERROR)", str(logging.get("level", "INFO"))).upper()
     if log_level not in {"DEBUG", "INFO", "WARNING", "ERROR"}:
@@ -299,6 +301,9 @@ def _configure_interactively(config_path: Path) -> int:
         if os.name == "posix":
             backup_path.chmod(0o600)
     write_config(config_path, config)
+    for configured_path in (paths.get("log_file"), paths.get("state_file")):
+        if configured_path:
+            Path(configured_path).expanduser().parent.mkdir(parents=True, exist_ok=True)
     print(f"Saved configuration: {config_path}")
     if backup_path:
         print(f"Previous configuration backup: {backup_path}")
