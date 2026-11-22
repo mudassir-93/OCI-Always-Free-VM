@@ -10,11 +10,11 @@ Type=simple
 # Replace CHANGE_ME with the Linux account name and matching home directory.
 User=CHANGE_ME
 Group=CHANGE_ME
-WorkingDirectory=/home/CHANGE_ME/oci-free-instance-automation
+WorkingDirectory=/opt/oci-free-instance-automation
 Environment=PYTHONUNBUFFERED=1
 EnvironmentFile=-/etc/oci-free-watch.env
 UMask=0077
-ExecStart=/home/CHANGE_ME/oci-free-instance-automation/.venv/bin/python /home/CHANGE_ME/oci-free-instance-automation/oci_free_watch.py --monitor
+ExecStart=/opt/oci-free-instance-automation/.venv/bin/python /opt/oci-free-instance-automation/oci_free_watch.py --monitor
 Restart=on-failure
 RestartSec=120
 NoNewPrivileges=true
@@ -26,7 +26,7 @@ ProtectKernelModules=true
 ProtectControlGroups=true
 RestrictSUIDSGID=true
 RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
-ReadWritePaths=/home/CHANGE_ME/oci-free-instance-automation/logs /home/CHANGE_ME/oci-free-instance-automation/state
+ReadWritePaths=/opt/oci-free-instance-automation/logs /opt/oci-free-instance-automation/state
 
 [Install]
 WantedBy=multi-user.target

@@ -88,6 +88,7 @@ Use config.example.json and placeholder documentation only. If a credential was 
 ./oci-free config-check
 ./oci-free test
 python -m py_compile oci_free_watch.py
+bash -n oci-free
 python -m unittest discover -s tests -v
 python oci_free_watch.py --audit --config config.json
 ~~~

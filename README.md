@@ -177,12 +177,9 @@ Before launch, the program re-runs preflight, writes a pending/idempotency recor
 
 ### 6. systemd
 
-Review systemd/oci-free-watch.service. Its example assumes:
-- Application directory: /opt/oci-free-instance-automation
-- Linux user/group: ubuntu
-- Virtual environment: .venv
+Review systemd/oci-free-watch.service. It uses the generic application path /opt/oci-free-instance-automation and the explicit CHANGE_ME placeholder for the Linux service user and group.
 
-Customize the user, group, paths, and writable directories for your host before installing:
+Customize the service user/group and, if you use another install path, all matching paths and writable directories before installing:
 
 ~~~bash
 sudo cp systemd/oci-free-watch.service /etc/systemd/system/

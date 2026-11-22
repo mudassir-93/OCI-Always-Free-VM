@@ -111,12 +111,9 @@ Use Oracle's current IAM documentation and grant only the permissions required b
 
 ## 8. Install systemd (read-only default)
 
-Review systemd/oci-free-watch.service. Its example assumes:
-- Application path: /opt/oci-free-instance-automation
-- Linux user/group: ubuntu
-- Virtual environment: .venv
+Review systemd/oci-free-watch.service. It uses the generic application path /opt/oci-free-instance-automation and a CHANGE_ME placeholder for the Linux service user and group.
 
-Change User, Group, WorkingDirectory, ExecStart, and ReadWritePaths to match your host.
+Replace User and Group with your actual Linux account. If your project lives elsewhere, update WorkingDirectory, ExecStart, and ReadWritePaths consistently.
 
 ~~~bash
 sudo cp systemd/oci-free-watch.service /etc/systemd/system/
