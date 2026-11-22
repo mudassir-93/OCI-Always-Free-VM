@@ -114,3 +114,12 @@ Before ending a work session:
 - PR #5 and PR #6 remain open and draft. PR #6 remains stacked on PR #5.
 - `main`, production deployments, and live OCI resources were not modified or accessed.
 - Next: verify fresh CI, continue safety review, then request operator review; do not merge without explicit approval.
+
+
+## Latest continuation update — fresh-install validation plan (2026-11-22)
+
+- Added `docs/testing/INSTALLATION_SMOKE_TEST.md` covering fresh Windows/Linux installation, existing-directory protection, local-only configuration checks, sanitized test evidence, and release completion criteria.
+- Linked the smoke-test guide from README.
+- Confirmed the current gap: Windows installer has PowerShell parser validation but no end-to-end automated Windows execution test; the integration cleanup/preservation test is POSIX-only.
+- No fresh workstation install has been performed. Do not call the installer release-ready until both Windows and Linux manual fresh-install checks pass.
+- Next coding task: add focused wizard tests for timestamped backup behavior and for clearing pre-existing `creation_enabled` / `creation_confirmation` values; run exact-HEAD CI and keep PRs unmerged pending operator approval.
