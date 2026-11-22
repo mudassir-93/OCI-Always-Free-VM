@@ -23,11 +23,15 @@ Maintain a reusable, public, multi-user OCI Always Free A1 capacity monitor and 
 
 ## Product and architecture boundaries
 
-- Runtime: Linux, Python 3.11+, official OCI Python SDK.
+- Runtime: Windows and Linux, Python 3.11+, official OCI Python SDK. The legacy Bash helper and systemd unit remain Linux-only.
 - Supported compute shape: VM.Standard.A1.Flex only.
 - Target region must equal the tenancy home region.
 - Use an existing public subnet and existing Internet Gateway route; public IPv4 is currently required.
-- User-specific values belong only in ignored local config.json and the local OCI SDK profile.
+- User-specific values belong only in per-user application configuration and the local OCI SDK profile; never commit them.
+- The new `oci-platform` CLI is a thin compatibility layer over `oci_free_watch.py`; preserve the existing engine and direct Python commands during gradual migration.
+- Keep `oci-platform setup` local-only: it must not contact OCI, create credentials, arm creation, or overwrite an existing config.
+- The CLI must not display credentials or OCIDs in ordinary configuration summaries.
+- Preserve cross-platform process locking; do not reintroduce unconditional POSIX-only imports.
 - config.example.json must contain placeholders or generic defaults only.
 - Keep the systemd unit read-only by default.
 - Keep dependencies minimal. Do not add Docker, Node.js, databases, Redis, queues, or frameworks without a clear requirement and approval.
@@ -50,8 +54,11 @@ Maintain a reusable, public, multi-user OCI Always Free A1 capacity monitor and 
 4. Add or update unit tests for policy and safety changes.
 5. Run:
    - python oci_free_watch.py --validate-config --config config.json (when a complete local config is available)
-   - python -m py_compile oci_free_watch.py
+   - python -m pip install -e .
+   - python -m compileall -q oci_platform oci_free_watch.py
    - python -m unittest discover -s tests -v
+   - oci-platform --help
+   - oci-platform --version
    - bash -n oci-free (when changing the command wrapper)
    - ./oci-free test (when the local virtual environment is installed)
 6. Review the diff for hard-coded identifiers, secrets, unsafe defaults, and contradictions.
@@ -67,7 +74,7 @@ Maintain a reusable, public, multi-user OCI Always Free A1 capacity monitor and 
 - Never log secrets or private key material.
 - Avoid broad exception handling that converts safety failures into retries.
 - Keep retry/backoff bounded and respectful of Retry-After.
-- Preserve atomic state writes, process locking, and OCI retry-token behavior.
+- Preserve atomic state writes, cross-platform process locking, and OCI retry-token behavior.
 - Avoid hidden side effects in audit/once commands.
 - Use descriptive, operator-readable log messages without account-specific identifiers in source defaults.
 

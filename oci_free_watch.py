@@ -12,7 +12,6 @@ security lists, NSGs, reserved IPs, or any non-A1 compute resources.
 from __future__ import annotations
 
 import argparse
-import fcntl
 import json
 import logging
 import math
@@ -682,6 +681,33 @@ def launch_one(compute: Any, tenancy_id: str, target: dict[str, Any], audit: dic
     return result
 
 
+def acquire_process_lock(lock_path: Path):
+    """Acquire a non-blocking process lock on POSIX and Windows.
+
+    The open handle must remain alive for the duration of the protected work.
+    """
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    handle = lock_path.open("a+")
+    try:
+        if os.name == "nt":
+            import msvcrt
+
+            handle.seek(0, os.SEEK_END)
+            if handle.tell() == 0:
+                handle.write("0")
+                handle.flush()
+            handle.seek(0)
+            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError as exc:
+        handle.close()
+        raise BlockingIOError("Another automation process already holds the lock.") from exc
+    return handle
+
+
 def calculate_wait_seconds(cfg: dict[str, Any], attempt: int, rate_limited: bool = False, retry_after: int | None = None) -> int:
     mode = cfg.get("mode", {})
     base = max(300, int(mode.get("capacity_poll_minutes", 20)) * 60)
@@ -692,7 +718,7 @@ def calculate_wait_seconds(cfg: dict[str, Any], attempt: int, rate_limited: bool
     return int(backoff * random.uniform(0.85, 1.15))
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Configurable OCI Always Free A1 capacity monitor (read-only by default)")
     parser.add_argument("--config", default=str(APP_DIR / "config.json"), help="Path to application JSON config")
     parser.add_argument("--validate-config", action="store_true", help="Validate local config and policy without connecting to OCI")
@@ -700,7 +726,7 @@ def main() -> int:
     parser.add_argument("--once", action="store_true", help="Perform one audit and capacity check, then exit")
     parser.add_argument("--monitor", action="store_true", help="Continuously monitor (read-only unless separately armed)")
     parser.add_argument("--enable-create", action="store_true", help="Explicitly arm the single-instance launch path")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     cfg_path = Path(args.config).expanduser().resolve()
     cfg = read_json(cfg_path)
@@ -731,12 +757,10 @@ def main() -> int:
     state_file = Path(cfg.get("paths", {}).get("state_file", str(APP_DIR / "state/state.json"))).expanduser()
     setup_logging(log_file, cfg.get("logging", {}).get("level", "INFO"))
 
-    # Single-process lock prevents duplicate monitor processes.
+    # Single-process lock prevents duplicate monitor processes on POSIX and Windows.
     lock_path = state_file.with_suffix(".lock")
-    lock_path.parent.mkdir(parents=True, exist_ok=True)
-    lock_handle = lock_path.open("w")
     try:
-        fcntl.flock(lock_handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        lock_handle = acquire_process_lock(lock_path)
     except BlockingIOError:
         LOG.error("Another oci_free_watch process is already running.")
         return 2

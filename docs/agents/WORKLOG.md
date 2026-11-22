@@ -65,3 +65,21 @@ For each future milestone, append:
 - Repository description metadata could not be changed through the available GitHub connection actions; a suggested description and topics are provided in the handoff.
 - Tests: documentation-only change; CI validation pending on this branch.
 - No OCI credentials, live tenancy operations, or production deployments were used.
+
+## 2026-11-22 — CLI V1 foundation (in progress)
+
+- Created isolated branch `feat/cli-v1-foundation` from the reviewed `main` baseline. No changes were made to `main` or any production deployment.
+- Added an installable Python project definition and the `oci-platform` console entry point.
+- Added a thin CLI layer for local setup, diagnostics, redacted configuration summary, OCI SDK profile listing/selection, VM audit/once/monitor, local status, and logs.
+- First-run setup creates a per-user configuration from a packaged generic template only when the target file is absent. It is creation-disabled and performs no OCI API calls.
+- Preserved the original `oci_free_watch.py` entry point and added optional argv injection for CLI integration.
+- Replaced unconditional POSIX `fcntl` import with platform-specific non-blocking process locking to enable Windows and Linux engine startup.
+- Added offline CLI tests for setup preservation, profile redaction/selection, engine argument mapping, read-only defaults, and process-lock behavior.
+- Added a GitHub Actions matrix for Windows/Linux and Python 3.11/3.12.
+- Updated README, AGENTS.md, and project memory for the new CLI foundation and gradual backward-compatibility approach.
+- Local tests: not run in this environment because outbound GitHub access was unavailable for cloning the branch.
+- CI evidence: the legacy Python checks passed on Python 3.11 and 3.12. The new CLI matrix passed all four Windows/Linux × Python 3.11/3.12 jobs on commit `086eedc295be41f6d46ccba9b5eea610a808c7a3`; the logs show all 24 offline tests passed on Windows and Linux, and wheel template inclusion plus CLI entry-point checks passed on Ubuntu. A final rerun is in progress after a workflow-trigger-only adjustment.
+- Tests not run: manual testing on the operator's own fresh Windows/Linux machines and live OCI tests. No live OCI operations were attempted.
+- Safety review: no account-specific values or credentials were added; setup does not contact OCI or overwrite an existing config; VM creation still requires the original three independent switches and live preflight.
+- Known risks / next checks: perform a human review of CLI UX and configuration migration behavior; verify the final CI rerun. The one-command installer and interactive wizard remain intentionally out of scope. Do not merge until the final checks and operator review are complete.
+- Next task: fix any CI or review findings, then prepare a draft PR for operator review. Installer and guided wizard remain a later milestone.
