@@ -208,6 +208,17 @@ TELEGRAM_CHAT_ID=YOUR_CHAT_ID
 
 The systemd unit loads this file. Never place notification credentials in source code or Git.
 
+## CLI reference
+
+| Command | Effect |
+|---|---|
+| python oci_free_watch.py --validate-config | Validate local configuration and policy offline; no OCI API call |
+| python oci_free_watch.py --audit | One read-only OCI audit |
+| python oci_free_watch.py --once | One audit and capacity check; never launches |
+| python oci_free_watch.py --monitor | Continuous read-only monitoring |
+| python oci_free_watch.py --monitor --enable-create | Creation-capable monitoring only when both local config confirmations are also set |
+| python oci_free_watch.py --config /path/to/config.json --audit | Use an alternate local configuration file |
+
 ## Retry policy
 
 Default polling is 20 minutes. Exponential backoff is capped at 180 minutes with ±15% jitter. Throttling and transient server errors are retried; Retry-After is observed when available. Authentication, authorization, invalid configuration, quota, and other non-transient errors stop for manual intervention.
