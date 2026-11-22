@@ -171,6 +171,45 @@ class CliSetupTests(unittest.TestCase):
             self.assertEqual(result, 2)
             self.assertFalse(config_path.exists())
 
+    def test_interactive_configure_backs_up_existing_config_and_disarms_creation(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config_path = root / "config.json"
+            state_dir = root / "state"
+            with patch("oci_platform.cli.default_state_dir", return_value=state_dir):
+                self.assertTrue(initialize_config(config_path))
+            original = read_config(config_path)
+            original["mode"]["creation_enabled"] = True
+            original["mode"]["creation_confirmation"] = "LAUNCH_ONE_ALWAYS_FREE_INSTANCE"
+            write_config(config_path, original)
+
+            ssh_key = root / "id_ed25519.pub"
+            ssh_key.write_text("ssh-ed25519 AAAATEST example", encoding="utf-8")
+            answers = [
+                "y", "", "", "us-phoenix-1", "",
+                "", "", "", "", "", "", "", "y",
+                "example-ad", "ocid1.vcn.example", "", "",
+                "", "", "", "", str(ssh_key), "ocid1.image.example", "y",
+                "", "", "", "", "", "", "", "", "y",
+            ]
+            with patch("builtins.input", side_effect=answers), patch(
+                "oci_platform.cli.default_state_dir", return_value=state_dir
+            ):
+                result = main(["--config", str(config_path), "configure"])
+
+            self.assertEqual(result, 0)
+            updated = read_config(config_path)
+            self.assertFalse(updated["mode"]["creation_enabled"])
+            self.assertEqual(updated["mode"]["creation_confirmation"], "")
+            backups = list(root.glob("config.json.*.bak"))
+            self.assertEqual(len(backups), 1)
+            backup = read_config(backups[0])
+            self.assertTrue(backup["mode"]["creation_enabled"])
+            self.assertEqual(
+                backup["mode"]["creation_confirmation"],
+                "LAUNCH_ONE_ALWAYS_FREE_INSTANCE",
+            )
+
 
 class CliEngineIntegrationTests(unittest.TestCase):
     def _valid_config(self, path: Path) -> None:
