@@ -108,6 +108,10 @@ def _configure_interactively(config_path: Path) -> int:
     config = read_config(config_path) if config_path.exists() else json.loads(
         files("oci_platform").joinpath("templates", "config.example.json").read_text(encoding="utf-8")
     )
+    if not config_path.exists():
+        state_dir = default_state_dir()
+        config.setdefault("paths", {})["log_file"] = str(state_dir / "logs" / "oci-free-watch.log")
+        config["paths"]["state_file"] = str(state_dir / "state" / "state.json")
 
     print("\nOCI Automation Platform — guided local configuration")
     print("This wizard only edits your local config. It does not call OCI or create cloud resources.")
@@ -167,6 +171,16 @@ def _configure_interactively(config_path: Path) -> int:
                 break
             except ValueError:
                 print("Enter a positive whole number.")
+
+    if target["ocpus"] > float(account.get("a1_free_max_ocpu", 2)):
+        print("Requested OCPU exceeds the configured Free Tier allowance; no changes were saved.")
+        return 2
+    if target["memory_gb"] > float(account.get("a1_free_max_memory_gb", 12)):
+        print("Requested RAM exceeds the configured Free Tier allowance; no changes were saved.")
+        return 2
+    if target["boot_volume_size_gb"] > int(account.get("combined_free_volume_gb", 200)):
+        print("Boot volume exceeds the configured combined storage allowance; no changes were saved.")
+        return 2
 
     target["shape"] = "VM.Standard.A1.Flex"
     target["operating_system"] = "Canonical Ubuntu"
