@@ -1,156 +1,80 @@
 # AI session handoff — OCI Always Free A1 VM Automation
 
-> **Read this file at the start of every AI coding session.** It is the concise, current continuation point. For durable rules and architecture, also read `AGENTS.md` and `docs/agents/PROJECT_MEMORY.md`. The repository and GitHub branches are the source of truth; do not rely on a previous chat transcript.
+> Read this file first when continuing work. The GitHub repository and current branch/PR state are authoritative; older worklog entries are historical records.
 
-## Current objective
+## Objective
 
-Build a safe, lightweight, cross-platform Windows/Linux CLI for the existing OCI Always Free A1 capacity monitor and guarded single-instance launcher. Keep OCI as the first supported cloud. Preserve the original engine and Linux helper during gradual CLI migration. Do not add a GUI/dashboard yet.
+Maintain a safe, lightweight, cross-platform Windows/Linux CLI for the OCI Always Free A1 capacity monitor and guarded single-instance launcher. Preserve the existing engine and legacy Linux helper. Do not add a GUI/dashboard or unnecessary services.
 
 ## Non-negotiable safety
 
-- Default behavior is read-only. A launch requires all existing independent guards: local `mode.creation_enabled=true`, exact `LAUNCH_ONE_ALWAYS_FREE_INSTANCE` confirmation, and explicit CLI `--enable-create`.
-- Never upgrade an OCI account, create/modify networking, launch a non-A1 shape, or modify/terminate existing resources.
-- Never run live OCI operations, change production deployments, or enable a creation service during coding work unless the user explicitly authorizes that exact action.
+- Default behavior is read-only. A launch requires all three independent guards: `mode.creation_enabled=true`, exact `LAUNCH_ONE_ALWAYS_FREE_INSTANCE` confirmation, and explicit CLI `--enable-create`.
+- `--audit` and `--once` are read-only. Monitor stays read-only unless all creation guards are satisfied.
+- Never create/modify networking, upgrade OCI accounts, launch non-A1 shapes, or modify/terminate existing instances.
+- Never run live OCI operations, launch a VM, change billing/IAM, or alter production deployments without separate explicit authorization for that exact action.
 - Never commit credentials, private keys, local config, personal OCIDs, account IDs, or production host details. Do not ask the user to paste secrets.
-- Never claim guaranteed Always Free eligibility, capacity, or zero cost.
-- Do not merge PRs, retarget PRs, or deploy without the user's explicit approval.
-- Preserve backward compatibility; add migration paths rather than removing legacy entry points.
+- Never guarantee Always Free eligibility, available capacity, or zero billing.
+- Preserve backward compatibility and the legacy entry points.
 
-## Current GitHub state (checked 2026-11-22)
+## Current GitHub state — checked 2026-11-22
 
-Repository: [mudassir-93/OCI-Always-Free-VM](https://github.com/mudassir-93/OCI-Always-Free-VM)
+Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 
 | Item | Current state |
 |---|---|
-| Default branch | `main` — untouched by the current CLI work |
-| Milestone 1 branch | `feat/cli-v1-foundation` |
-| Milestone 1 PR | [#5 — cross-platform CLI foundation](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/5), OPEN, DRAFT, not merged |
-| Milestone 2 branch | `feat/cli-v1-installer-wizard` |
-| Milestone 2 PR | [#6 — installer and guided configuration](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/6), OPEN, DRAFT, not merged |
-| Milestone 2 HEAD | `12016469da75e03ea2ec2d9b8e6a263b4f15a933` (latest review fix + regression test) |
-| PR #6 base | `feat/cli-v1-foundation` (stacked on PR #5) |
-| CI at latest checked code HEAD | Python checks and CLI foundation matrix completed SUCCESS on Windows/Linux × Python 3.11/3.12 at parent HEAD `1b4c055cc4a8d08767cba347916b87690eb5971f`; new VPU guard fix is awaiting fresh CI |
-| Live cloud work | None; no OCI API calls, VM launch, or production deployment changes |
+| `main` | `29b66fbe83655692633b06d1c71157071969c1d6` |
+| PR #5 | MERGED into `main`; squash merge commit `29b66fbe83655692633b06d1c71157071969c1d6` |
+| PR #6 | OPEN, DRAFT, targeting `main`: https://github.com/mudassir-93/OCI-Always-Free-VM/pull/6 |
+| PR #6 branch | `feat/cli-v1-installer-wizard` |
+| PR #6 current HEAD | `4b78ee759e7ec95866abdae2a825a4d095492853` |
+| PR #6 diff | 15 files, 1,287 additions, 6 deletions; only Milestone 2 installer/wizard and documentation delta |
+| PR #6 mergeability | GitHub reports mergeable=true at last check |
+| PR #6 CI | Fresh CI for current HEAD was queued at last check; do not merge until every required job completes successfully |
+| Live cloud/production | No live OCI API call, VM launch, billing/IAM change, EC2 change, or production deployment was performed |
 
-PR #6 depends on PR #5. Keep the dependency explicit. Do not merge #6 into `main` before #5 is accepted. After the user approves merging #5, re-check PR #6's base and retarget it to `main` only with approval. Then rerun all CI before requesting approval to merge #6.
+PR #5 was merged only after the user explicitly approved the order (#5 first, #6 second). PR #6 was retargeted to main after #5 merged. To avoid showing the already-merged foundation changes again in PR #6, main was merged into the feature branch using a normal two-parent merge commit; the branch was advanced with a fast-forward ref update (no force push). The PR diff is now the Milestone 2 delta only.
 
 ## Implemented
 
-### Milestone 1 — CLI foundation (PR #5; not merged)
+### Milestone 1 — PR #5, merged
 
-- Installable Python package and `oci-platform` console command.
-- Setup, doctor, redacted config display/validation, OCI profile list/use, VM audit/once/monitor, status, and logs.
-- Thin CLI integration over the existing engine; direct engine invocation and legacy helper preserved.
+- Installable Python package and `oci-platform` CLI.
+- Setup, doctor, redacted config summary/validation, OCI profile list/use, VM audit/once/monitor, status, and logs.
+- Thin compatibility layer over the existing engine; direct engine invocation and legacy Linux helper preserved.
 - Windows/Linux process locking (`msvcrt` / `fcntl`).
 - Offline tests and Windows/Linux × Python 3.11/3.12 CI.
-- Existing launch guards retained.
+- Existing creation guards retained.
 
-### Milestone 2 — installer and guided configuration (PR #6; not merged)
+### Milestone 2 — PR #6, pending merge
 
-- `oci-platform configure`: local-only wizard for OCI profile, Free Tier attestation, home region, existing network IDs, A1 resources/storage, SSH public-key path, pinned Ubuntu image, usage/budget policy, retry settings, paths, and log level.
-- Wizard requires target region == tenancy home region, checks operator-entered policy caps, validates VCN/subnet/image identifier prefixes and reads the SSH public key file.
-- Existing config gets a timestamped backup before save.
-- Wizard always forces VM creation disabled and clears the launch confirmation phrase, even if previous config was armed.
-- `install.ps1` and `install.sh`: clone default branch into a new user-owned directory, create isolated venv, install CLI, and create a safe starter config.
-- Installers refuse existing install directories; no admin/root requirement, PATH modification, background service, OCI API call, or cloud resource operation.
-- README and agent docs updated. Offline wizard tests and installer syntax CI added.
+- `oci-platform configure`: local-only wizard for OCI profile, Free Tier attestation, home region, existing VCN/subnet, A1 resources/storage, SSH public-key path, Ubuntu image, usage/budget policy, retry settings, local paths, and logging.
+- Enforces target region == tenancy home region and local policy caps; validates identifier prefixes and SSH public-key format.
+- Timestamped backup before updating existing config.
+- Wizard always forces creation disabled and clears the confirmation phrase, even if the prior config was armed.
+- `install.ps1` and `install.sh`: install into a new user-owned directory, create an isolated virtual environment, install the CLI, and initialize a safe config.
+- Installers refuse to overwrite an existing directory, require no admin/root, make no PATH/service changes, and do not contact OCI or create cloud resources.
+- Linux and Windows installer failure/preservation integration tests.
 
 ## Validation evidence
 
-At the previous verified Milestone 2 HEAD (`1f65967a3bd128bd7e55c1314b219a068abd430d`):
-
-- GitHub Actions `CLI foundation`: completed successfully (Windows/Linux × Python 3.11/3.12).
-- GitHub Actions `Python checks`: completed successfully.
-- Prior CI logs include offline tests, compile checks, Linux shell syntax, Windows PowerShell parser validation, wheel packaging, and CLI help/version checks.
-- Follow-up review added Windows install-path normalization for relative `OCI_PLATFORM_HOME` values and an offline test proving a target region different from the tenancy home region is rejected without writing config.
-- The earlier wizard-test `StopIteration` failures were caused by a prompt mock that did not answer a newly added image-eligibility question. Prompt-aware callbacks fixed that issue; subsequent Python checks passed.
-- Installer failure handling now reserves a new install directory atomically and removes only that directory if clone, venv, pip, or initial setup fails. Existing install directories are preserved.
-- Added Linux installer integration tests for partial-clone cleanup and preservation of pre-existing install data.
-- Python checks at HEAD `e6ae13225e646abe9725bd004b4177135483a237` passed on Python 3.11 and 3.12. CLI foundation matrix: Linux jobs passed; Windows jobs were still in progress at last check.
-- Python workflow now runs feature-branch checks on pull requests rather than on both push and pull_request events, reducing duplicate notifications.
-- The temporary accidental default-branch handoff commit was removed and `main` was force-restored with a lease to its exact pre-change commit `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`; the default branch now matches its original head again.
-- No real fresh-machine installation has been performed yet.
-- No live OCI integration test has been performed or authorized.
-- Do not describe installer as production-validated until a fresh Windows and Linux workstation test has passed.
-
-## Known limitations / items to review
-
-- Installers currently clone `main`; until PR #5 and #6 are merged, users must not expect the installers to fetch these in-progress changes from the default branch.
-- Installers are first-install scripts, not update/uninstall/rollback managers.
-- The wizard does not authenticate to OCI or verify the account/image/region live; its confirmations are operator attestations. The engine's live preflight remains authoritative.
-- No GUI/dashboard, multi-cloud support, auto-update, rollback, service manager, or interactive monitoring TUI is in scope yet.
-- Wizard boot-volume performance now rejects anything except the engine's exact 10-VPU/GB policy; regression test added. Fresh CI is pending.
-- Review remaining wizard validation and installer failure cleanup before calling this release-ready.
-- Do not assume OCI billing or Always Free eligibility from local configuration values.
+- PR #5 exact HEAD `5b91248419182a06216f400296a9f2c0546a2be9`: all 10 check runs completed successfully (Windows/Linux × Python 3.11/3.12 plus Python checks).
+- PR #6 prior exact HEAD `55ee2ad3145af0b527ce6d9cf9a427d08a24ebeb`: all 6 check runs completed successfully, including executable Windows installer safety tests and Python checks.
+- PR #6 now has a new merge commit/base relationship at HEAD `4b78ee759e7ec95866abdae2a825a4d095492853`; fresh CI was queued and must be checked for this exact HEAD.
+- Automated CI covers compilation, offline unit tests, CLI help/version, wheel template packaging, Linux shell syntax, PowerShell parsing, Linux installer failure cleanup/preservation, and Windows installer failure cleanup/preservation.
+- A successful clean install on the user's actual Windows and Linux workstations has NOT been performed. Keep this as a manual release validation gate; do not claim 100% production validation.
+- No live OCI integration, tenancy validation, VM launch, billing change, or production test has been performed.
 
 ## Exact next actions
 
-1. Re-read `AGENTS.md`, `docs/agents/PROJECT_MEMORY.md`, this file, and the latest PR #5/#6 status.
-2. Re-check fresh CI for HEAD `12016469da75e03ea2ec2d9b8e6a263b4f15a933`. Review PowerShell cleanup behavior and remaining PR #6 edge cases. Do not merge.
-3. Add tests/fixes for any concrete findings on `feat/cli-v1-installer-wizard`; update this file and `docs/agents/WORKLOG.md` after meaningful changes.
-4. Ask the user to review/approve PR #5 before merging it. Do not merge autonomously.
-5. After #5 is approved and merged, with approval retarget #6 to `main`, rerun CI, and ask for #6 approval.
-6. After both PRs are merged, guide the user through fresh-machine installation tests on Windows and Linux. Keep setup creation-disabled and use only offline validation until the user separately authorizes live OCI access.
-7. Next product milestone after stable installation: configuration migration/import and safe profile/config backup/restore. Discuss scope before implementation.
+1. Check all workflow runs/check-runs for exact PR #6 HEAD `4b78ee759e7ec95866abdae2a825a4d095492853`; wait for every required Windows/Linux and Python check to finish green.
+2. Inspect the final PR #6 diff and verify it remains only the 15-file Milestone 2 delta.
+3. Update PR #6 body if needed, mark it ready for review only after CI is green, then merge using the exact expected HEAD SHA. User has already explicitly approved PR #6 after PR #5, so no new approval is needed unless scope changes or a safety issue appears.
+4. Verify PR #6 merged and main now contains both milestones.
+5. Give the user exact Windows and Linux fresh-install commands. Observe actual workstation outputs before claiming installation success.
+6. Keep all local configuration creation-disabled. Do not run OCI audit or launch a VM unless the user separately authorizes it.
 
-## Session closeout requirements
+## Session closeout
 
-Before ending a work session:
-- Update this file with current branch, HEAD SHA, PR state, CI state, completed work, blockers, and exact next actions.
-- Append a dated entry to `docs/agents/WORKLOG.md`.
-- Keep `docs/agents/PROJECT_MEMORY.md` aligned with durable architecture changes.
-- Commit/push work on the approved feature branch only.
-- Report tests passed, failed, and not run separately.
-- State explicitly whether `main`, live OCI, and production were untouched.
-
-
-## Review correction — boot-volume policy alignment (2026-11-22)
-
-- Code review found that the wizard accepted boot-volume performance values from 10 through 120 VPUs/GB, while the existing engine's safety guard permits exactly 10 VPUs/GB.
-- Updated the wizard to reject every value except 10 before saving configuration.
-- Added an offline regression test proving a value of 20 is rejected and no new config file is written.
-- New feature-branch HEAD: `12016469da75e03ea2ec2d9b8e6a263b4f15a933`.
-- Previous full CI matrix at parent HEAD `1b4c055cc4a8d08767cba347916b87690eb5971f` passed Windows/Linux × Python 3.11/3.12. Fresh CI for this review fix is pending.
-- PR #5 and PR #6 remain open and draft. PR #6 remains stacked on PR #5.
-- `main`, production deployments, and live OCI resources were not modified or accessed.
-- Next: verify fresh CI, continue safety review, then request operator review; do not merge without explicit approval.
-
-
-## Latest continuation update — fresh-install validation plan (2026-11-22)
-
-- Added `docs/testing/INSTALLATION_SMOKE_TEST.md` covering fresh Windows/Linux installation, existing-directory protection, local-only configuration checks, sanitized test evidence, and release completion criteria.
-- Linked the smoke-test guide from README.
-- Confirmed the current gap: Windows installer has PowerShell parser validation but no end-to-end automated Windows execution test; the integration cleanup/preservation test is POSIX-only.
-- No fresh workstation install has been performed. Do not call the installer release-ready until both Windows and Linux manual fresh-install checks pass.
-- Next coding task: add focused wizard tests for timestamped backup behavior and for clearing pre-existing `creation_enabled` / `creation_confirmation` values; run exact-HEAD CI and keep PRs unmerged pending operator approval.
-
-
-## Latest continuation update — installer recovery regression (2026-11-22)
-
-- Added a POSIX integration test for virtual-environment creation failure after the installer has reserved the new destination; it verifies cleanup removes only the newly-created incomplete directory.
-- The initial fixture had escaped newlines in the generated shell script. CI exposed the fixture issue; corrected it in the next commit. Do not treat the first failed run as an installer runtime defect.
-- Current branch HEAD: `44040482ddbf711ce843caad3351f27b3863a9c4`.
-- Python checks passed on Python 3.11 and 3.12. CLI foundation matrix: Ubuntu Python 3.11 and 3.12 passed; Windows Python 3.11 and 3.12 were still running at last check.
-- Existing tests already cover config backup creation and forced disarming of previously armed VM creation settings.
-- `main` remains at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`; PR #5/#6 remain open/draft; no live OCI, VM launch, or production changes.
-- Next: verify Windows matrix completion, then arrange real fresh-install checks on Windows and Linux after both PRs are approved and merged.
-
-
-## Final CI recheck — 2026-11-22
-
-- Installer wizard branch HEAD `b64a44df77faf37f1a41dbf7db7104e694be975d`: CLI foundation matrix passed on Windows/Linux × Python 3.11/3.12; Python checks passed on Python 3.11/3.12.
-- Foundation PR #5 head `5b91248419182a06216f400296a9f2c0546a2be9`: its CLI foundation and Python checks runs are successful.
-- PR #5 remains draft against `main`; PR #6 remains draft against the foundation feature branch. No review submissions or inline review threads are present.
-- Main SHA is unchanged at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`.
-- The remaining external release gate is actual clean-workstation installation on Windows and Linux. Current CI parses the PowerShell installer but does not execute it end-to-end; POSIX integration tests cover clone failure, venv failure, and existing-directory protection.
-- No cloud resources, OCI tenancy, billing settings, EC2, or production deployment were touched. No PR merge was performed.
-
-
-## Windows installer integration update — 2026-11-22
-
-- Added an executable PowerShell integration test to the Windows GitHub Actions matrix. It runs the actual `install.ps1` against temporary paths, confirms an existing destination and sentinel file are preserved, and simulates a failing Git clone to confirm cleanup of only the new installer-owned directory.
-- The first CI attempt showed both assertions passing but the script process ended with exit code 1 due to the simulated native Git failure code remaining in PowerShell. Added explicit `exit 0` after successful assertions.
-- Code HEAD `6af29f358c0b8d1c880d76d4da265e8da32b3e68` passed all four OS/Python CLI jobs and both Python-check jobs.
-- Smoke-test documentation now reflects Windows integration coverage. Clean successful install on actual Windows and Linux workstations remains unverified and is still a release gate.
-- Latest tracker/documentation changes are triggering another CI run; verify exact current HEAD before claiming green.
-- No production, OCI tenancy, billing, VM launch, or main-branch changes. Keep both PRs unmerged until explicit approval.
+- Update this handoff and append a dated entry to `docs/agents/WORKLOG.md` after meaningful milestones.
+- Report passed, failed, and not-run checks separately.
+- State explicitly whether main, OCI resources, billing/IAM, EC2, and production were changed.
