@@ -43,28 +43,44 @@ if ([int]$Matches[1] -lt 11) {
 }
 Write-Host "Using $VersionText"
 
-if (Test-Path $InstallDir) {
+if (Test-Path -LiteralPath $InstallDir) {
     throw "Install directory already exists: $InstallDir. The installer will not overwrite or update existing files. Choose another OCI_PLATFORM_HOME or move the directory after backing it up."
 }
 
-$Parent = Split-Path -Parent $InstallDir
-New-Item -ItemType Directory -Force -Path $Parent | Out-Null
-git clone --depth 1 --branch main $Repository $InstallDir
-if ($LASTEXITCODE -ne 0) { throw "Git clone failed." }
+$InstallDirCreated = $false
+try {
+    $Parent = Split-Path -Parent $InstallDir
+    New-Item -ItemType Directory -Force -Path $Parent | Out-Null
 
-Set-Location $InstallDir
-& $Python @PythonArgs -m venv .venv
-if ($LASTEXITCODE -ne 0) { throw "Virtual environment creation failed." }
+    # Reserve the destination atomically. Only remove this directory if this
+    # installer created it and a later step fails.
+    New-Item -ItemType Directory -Path $InstallDir -ErrorAction Stop | Out-Null
+    $InstallDirCreated = $true
 
-$VenvPython = Join-Path $InstallDir ".venv\Scripts\python.exe"
-& $VenvPython -m pip install --upgrade pip
-if ($LASTEXITCODE -ne 0) { throw "pip upgrade failed." }
-& $VenvPython -m pip install -e .
-if ($LASTEXITCODE -ne 0) { throw "CLI installation failed." }
+    git clone --depth 1 --branch main $Repository $InstallDir
+    if ($LASTEXITCODE -ne 0) { throw "Git clone failed." }
 
-$Cli = Join-Path $InstallDir ".venv\Scripts\oci-platform.exe"
-& $Cli setup
-if ($LASTEXITCODE -ne 0) { throw "Initial local configuration setup failed." }
+    $VenvPath = Join-Path $InstallDir ".venv"
+    & $Python @PythonArgs -m venv $VenvPath
+    if ($LASTEXITCODE -ne 0) { throw "Virtual environment creation failed." }
+
+    $VenvPython = Join-Path $VenvPath "Scripts\python.exe"
+    & $VenvPython -m pip install --upgrade pip
+    if ($LASTEXITCODE -ne 0) { throw "pip upgrade failed." }
+    & $VenvPython -m pip install -e $InstallDir
+    if ($LASTEXITCODE -ne 0) { throw "CLI installation failed." }
+
+    $Cli = Join-Path $VenvPath "Scripts\oci-platform.exe"
+    & $Cli setup
+    if ($LASTEXITCODE -ne 0) { throw "Initial local configuration setup failed." }
+}
+catch {
+    if ($InstallDirCreated -and (Test-Path -LiteralPath $InstallDir)) {
+        Remove-Item -LiteralPath $InstallDir -Recurse -Force -ErrorAction SilentlyContinue
+        Write-Warning "Installation failed. Removed the incomplete installation directory: $InstallDir"
+    }
+    throw
+}
 
 Write-Host ""
 Write-Host "Installation complete: $InstallDir"
