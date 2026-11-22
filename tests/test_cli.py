@@ -132,6 +132,43 @@ class CliSetupTests(unittest.TestCase):
             with patch.dict(os.environ, {"OCI_PLATFORM_CONFIG": str(expected)}):
                 self.assertEqual(default_config_path(), expected)
 
+    def test_interactive_configure_saves_free_tier_settings_creation_disabled(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config_path = root / "config.json"
+            ssh_key = root / "id_ed25519.pub"
+            ssh_key.write_text("ssh-ed25519 AAAATEST example", encoding="utf-8")
+            answers = [
+                "y", "", "", "us-phoenix-1", "", "y", "example-ad",
+                "ocid1.vcn.example", "", "", "", "", "", "", str(ssh_key),
+                "ocid1.image.example", "y", "y",
+            ]
+            with patch("builtins.input", side_effect=answers), patch(
+                "oci_platform.cli.default_state_dir", return_value=root / "state"
+            ):
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    result = main(["--config", str(config_path), "configure"])
+            self.assertEqual(result, 0)
+            config = read_config(config_path)
+            self.assertEqual(config["account"]["home_region"], "us-phoenix-1")
+            self.assertEqual(config["target"]["region"], "us-phoenix-1")
+            self.assertEqual(config["target"]["ocpus"], 2)
+            self.assertEqual(config["target"]["memory_gb"], 4)
+            self.assertFalse(config["account"]["allow_paid_resources"])
+            self.assertTrue(config["account"]["free_tier_only_confirmed"])
+            self.assertFalse(config["mode"]["creation_enabled"])
+            self.assertEqual(config["mode"]["creation_confirmation"], "")
+            self.assertIn("VM creation: DISABLED", output.getvalue())
+
+    def test_interactive_configure_refuses_non_free_tier_without_writing(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config_path = Path(temp) / "config.json"
+            with patch("builtins.input", side_effect=["n"]):
+                result = main(["--config", str(config_path), "configure"])
+            self.assertEqual(result, 2)
+            self.assertFalse(config_path.exists())
+
 
 class CliEngineIntegrationTests(unittest.TestCase):
     def _valid_config(self, path: Path) -> None:
