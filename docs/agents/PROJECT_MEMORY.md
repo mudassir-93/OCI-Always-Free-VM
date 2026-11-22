@@ -4,7 +4,7 @@ This is durable, repository-level context for any AI coding agent. It describes 
 
 ## Product purpose
 
-A lightweight Python application that helps an operator monitor OCI Ampere A1 host capacity and optionally submit one guarded A1 VM launch request when capacity becomes available. It is designed for Linux VPS/EC2 hosting and uses the official OCI Python SDK.
+A lightweight OCI automation application for monitoring Ampere A1 host capacity and optionally submitting one guarded A1 VM launch request when capacity becomes available. The Python engine and new `oci-platform` CLI target Windows and Linux; the legacy Bash wrapper and systemd deployment remain Linux-only. It uses the official OCI Python SDK.
 
 The intended audience includes technically capable operators and people who use AI coding agents to configure and maintain the project. Documentation should be clear, explicit, and safe for first-time OCI users.
 
@@ -18,7 +18,9 @@ The intended audience includes technically capable operators and people who use 
 - Operator-selected OCPU, RAM, boot volume, OS/version, image, region/AD, and local network/key paths.
 - One target instance only.
 - Optional Telegram notifications via environment variables.
-- Linux runtime; Windows may be used as the developer workstation but is not a supported direct runtime.
+- Windows and Linux runtime for the Python engine and `oci-platform` CLI (Python 3.11+).
+- Linux-only systemd service and `oci-free` Bash convenience wrapper.
+- The new CLI is a thin layer over the existing engine; preserve direct Python invocation and legacy wrapper behavior during gradual migration.
 
 ## Configurability
 
@@ -61,7 +63,11 @@ Important limitations:
 
 ## Important files
 
-- oci_free_watch.py — CLI, policy guards, OCI API calls, audit, capacity monitoring, launch, retries, notifications, state.
+- oci_free_watch.py — existing engine, policy guards, OCI API calls, audit, capacity monitoring, launch, retries, notifications, and state.
+- oci_platform/cli.py — cross-platform command hierarchy, local setup, diagnostics, profile selection, and engine integration.
+- oci_platform/templates/config.example.json — packaged, account-neutral first-run configuration.
+- pyproject.toml — installable Python project and `oci-platform` console entry point.
+- tests/test_cli.py — offline tests for setup, profile handling, command safety, engine argv integration, and process locking.
 - oci-free — convenience command wrapper; all exposed monitoring commands remain read-only.
 - config.example.json — generic example configuration; never put real OCIDs or credentials here.
 - tests/test_policy.py — offline policy tests.
@@ -85,6 +91,11 @@ Use config.example.json and placeholder documentation only. If a credential was 
 ## Development commands
 
 ~~~bash
+python -m pip install -e .
+oci-platform --help
+oci-platform --version
+python -m compileall -q oci_platform oci_free_watch.py
+python -m unittest discover -s tests -v
 ./oci-free config-check
 ./oci-free test
 python -m py_compile oci_free_watch.py
@@ -105,3 +116,17 @@ An agent may inspect and edit repository code when asked. It must not silently:
 - overwrite local config/state or systemd overrides.
 
 Ask before any of these actions. Keep the live server and local account configuration separate from public repository changes.
+
+## CLI V1 foundation — implementation branch
+
+The first implementation milestone is being developed on `feat/cli-v1-foundation`; it is not yet merged into `main`.
+
+- Product direction: OCI-focused automation platform, CLI-first for V1, with Windows and Linux support.
+- Backward compatibility: gradual. Existing `python oci_free_watch.py ...` commands and the Linux `oci-free` wrapper remain supported.
+- The `oci-platform` command is a thin interface over the established engine, not a replacement automation engine.
+- Initial commands include setup, doctor, config show/validate, OCI profile list/use, VM audit/once/monitor, status, and logs.
+- Setup creates a per-user config from a packaged generic template only when missing. It does not connect to OCI, collect credentials, arm VM creation, or overwrite an existing config.
+- VM audit and once remain read-only. VM monitor remains read-only unless the operator explicitly supplies the creation CLI switch; the engine's existing two local confirmations and live preflight checks remain mandatory.
+- The engine now accepts an argv list for safe in-process CLI integration and uses platform-specific non-blocking process locking instead of importing POSIX `fcntl` unconditionally.
+- GitHub Actions is configured to test Windows and Linux on Python 3.11 and 3.12. CI results must be checked before considering this milestone complete.
+- One-command GitHub installer, guided setup wizard, automatic update/rollback, and dashboard are not part of this first foundation milestone.
