@@ -694,7 +694,7 @@ def acquire_process_lock(lock_path: Path):
 
             handle.seek(0, os.SEEK_END)
             if handle.tell() == 0:
-                handle.write("\\0")
+                handle.write("0")
                 handle.flush()
             handle.seek(0)
             msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
