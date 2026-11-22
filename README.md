@@ -103,7 +103,7 @@ python -m venv .venv
 # Linux/macOS:
 source .venv/bin/activate
 # Windows PowerShell:
-# .venv\\Scripts\\Activate.ps1
+# .venv\Scripts\Activate.ps1
 
 python -m pip install --upgrade pip
 python -m pip install -e .
