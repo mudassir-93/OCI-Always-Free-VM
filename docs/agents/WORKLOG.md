@@ -39,3 +39,16 @@ For each future milestone, append:
 - Safety review:
 - Known risks / limitations:
 - Next recommended task:
+
+
+## 2026-11-22 — Safe operator commands and generic deployment template (completed)
+
+- Added the executable oci-free helper for setup, offline config validation, unit tests, read-only audit, one-shot capacity checks, read-only monitoring, and local systemd status/logs.
+- The helper never passes --enable-create; creation remains an explicit advanced workflow outside the helper.
+- Replaced the tracked systemd template's original Linux username with CHANGE_ME and documented how to customize the generic installation path.
+- Added SECURITY.md, a placeholder-only .env.example, and a Claude Code /work slash command.
+- Updated README.md, AGENTS.md, and project memory with the helper commands and validation workflow.
+- Added CI checks for shell syntax and executable file mode.
+- GitHub Actions passed on Python 3.11 and 3.12, including dependency install, Python compilation, bash -n, executable-bit validation, and unit tests.
+- No live OCI API operations or production VPS changes were performed.
+- PR #3 contains these changes and awaits merge/review.
