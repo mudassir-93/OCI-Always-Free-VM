@@ -62,6 +62,7 @@ Important limitations:
 ## Important files
 
 - oci_free_watch.py — CLI, policy guards, OCI API calls, audit, capacity monitoring, launch, retries, notifications, state.
+- oci-free — convenience command wrapper; all exposed monitoring commands remain read-only.
 - config.example.json — generic example configuration; never put real OCIDs or credentials here.
 - tests/test_policy.py — offline policy tests.
 - systemd/oci-free-watch.service — Linux service that is read-only by default.
@@ -84,8 +85,8 @@ Use config.example.json and placeholder documentation only. If a credential was 
 ## Development commands
 
 ~~~bash
-python oci_free_watch.py --validate-config --config config.json
-python oci_free_watch.py --validate-config --config config.json
+./oci-free config-check
+./oci-free test
 python -m py_compile oci_free_watch.py
 python -m unittest discover -s tests -v
 python oci_free_watch.py --audit --config config.json

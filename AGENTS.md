@@ -52,6 +52,7 @@ Maintain a reusable, public, multi-user OCI Always Free A1 capacity monitor and 
    - python oci_free_watch.py --validate-config --config config.json (when a complete local config is available)
    - python -m py_compile oci_free_watch.py
    - python -m unittest discover -s tests -v
+   - ./oci-free test (when the local virtual environment is installed)
 6. Review the diff for hard-coded identifiers, secrets, unsafe defaults, and contradictions.
 7. Update README.md and docs/agents/PROJECT_MEMORY.md when behavior or architecture changes.
 8. Update docs/agents/WORKLOG.md with completed work, tests, open risks, and handoff state.

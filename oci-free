@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG="${OCI_APP_CONFIG:-$ROOT/config.json}"
+PYTHON="${OCI_PYTHON:-$ROOT/.venv/bin/python}"
+UNIT="${OCI_SYSTEMD_UNIT:-oci-free-watch.service}"
+
+usage() {
+  cat <<'EOF'
+OCI A1 monitor helper (read-only by default)
+
+  ./oci-free setup
+  ./oci-free config-check
+  ./oci-free test
+  ./oci-free audit
+  ./oci-free once
+  ./oci-free monitor
+  ./oci-free status
+  ./oci-free logs
+
+This helper never passes --enable-create.
+EOF
+}
+
+require_python() {
+  if [[ ! -x "$PYTHON" ]]; then
+    echo "Python environment not found. Run ./oci-free setup first." >&2
+    exit 2
+  fi
+}
+
+case "${1:-help}" in
+  help|-h|--help)
+    usage
+    ;;
+  setup)
+    command -v python3 >/dev/null 2>&1 || { echo "python3 is required." >&2; exit 2; }
+    if [[ ! -d "$ROOT/.venv" ]]; then
+      python3 -m venv "$ROOT/.venv"
+    fi
+    "$ROOT/.venv/bin/python" -m pip install --no-cache-dir -r "$ROOT/requirements.txt"
+    if [[ ! -f "$CONFIG" ]]; then
+      cp "$ROOT/config.example.json" "$CONFIG"
+      chmod 600 "$CONFIG"
+      echo "Created local config: $CONFIG"
+    else
+      echo "Preserved existing config: $CONFIG"
+    fi
+    mkdir -p "$ROOT/logs" "$ROOT/state"
+    chmod 700 "$ROOT/logs" "$ROOT/state"
+    echo "Setup complete. Edit config.json, then run ./oci-free config-check."
+    ;;
+  config-check)
+    require_python
+    exec "$PYTHON" "$ROOT/oci_free_watch.py" --config "$CONFIG" --validate-config
+    ;;
+  test)
+    require_python
+    cd "$ROOT"
+    exec "$PYTHON" -m unittest discover -s tests -v
+    ;;
+  audit)
+    require_python
+    exec "$PYTHON" "$ROOT/oci_free_watch.py" --config "$CONFIG" --audit
+    ;;
+  once)
+    require_python
+    exec "$PYTHON" "$ROOT/oci_free_watch.py" --config "$CONFIG" --once
+    ;;
+  monitor)
+    require_python
+    exec "$PYTHON" "$ROOT/oci_free_watch.py" --config "$CONFIG" --monitor
+    ;;
+  status)
+    exec sudo systemctl status "$UNIT" --no-pager
+    ;;
+  logs)
+    exec sudo journalctl -u "$UNIT" -f
+    ;;
+  *)
+    echo "Unknown command: $1" >&2
+    usage
+    exit 2
+    ;;
+esac

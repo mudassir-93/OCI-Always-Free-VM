@@ -4,6 +4,7 @@ config.*.json
 !config.example.json
 .env
 .env.*
+!.env.example
 *.env
 
 # Credentials and key material

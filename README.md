@@ -51,9 +51,13 @@ The example config uses conservative policy caps. The live Limits API check is s
 ├── README.md
 ├── config.example.json
 ├── oci_free_watch.py
+├── oci-free
 ├── requirements.txt
 ├── systemd/oci-free-watch.service
 ├── tests/test_policy.py
+├── SECURITY.md
+├── .env.example
+├── .claude/commands/work.md
 ├── docs/
 │   ├── DEPLOY_EC2.md
 │   └── agents/
@@ -84,14 +88,7 @@ Replace the repository placeholder with your fork or clone URL:
 ~~~bash
 git clone https://github.com/OWNER/REPOSITORY.git
 cd REPOSITORY
-python3 -m venv .venv
-. .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-cp config.example.json config.json
-chmod 600 config.json
-mkdir -p logs state
-chmod 700 logs state
+./oci-free setup
 ~~~
 
 ### 2. Configure OCI API authentication
@@ -218,6 +215,29 @@ The systemd unit loads this file. Never place notification credentials in source
 | python oci_free_watch.py --monitor | Continuous read-only monitoring |
 | python oci_free_watch.py --monitor --enable-create | Creation-capable monitoring only when both local config confirmations are also set |
 | python oci_free_watch.py --config /path/to/config.json --audit | Use an alternate local configuration file |
+
+## Convenience command wrapper
+
+The executable oci-free wrapper provides short commands for routine operations. It never passes --enable-create:
+
+~~~bash
+./oci-free setup
+./oci-free config-check
+./oci-free test
+./oci-free audit
+./oci-free once
+./oci-free monitor
+./oci-free status
+./oci-free logs
+~~~
+
+- setup creates the virtual environment, installs dependencies, and creates config.json only if it does not already exist.
+- config-check runs the application's offline --validate-config check.
+- audit and once are read-only OCI operations.
+- monitor is explicitly read-only because the wrapper never supplies --enable-create.
+- status and logs inspect the local systemd service.
+
+Use the Python CLI directly only for advanced workflows. The creation-capable --enable-create flag is deliberately not exposed by this helper.
 
 ## Retry policy
 
