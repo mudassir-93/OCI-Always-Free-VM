@@ -302,50 +302,53 @@ def get_resource_availability(limits: Any, tenancy_id: str, service: str, limit_
 
 
 def verify_live_a1_limits(limits: Any, tenancy_id: str, target: dict[str, Any]) -> dict[str, Any]:
-    """Verify A1 OCPU/memory remaining via OCI Limits API; fail closed if unavailable."""
+    """Verify the standard A1 OCPU/memory limits; ignore DVH and reserved variants."""
     definitions = oci.pagination.list_call_get_all_results(
         limits.list_limit_definitions,
         compartment_id=tenancy_id,
         service_name="compute",
     ).data
-    candidates = [d for d in definitions if "a1" in (d.name or "").lower()]
-    cpu_defs = [d for d in candidates if any(x in d.name.lower() for x in ("core", "cpu", "ocpu"))]
-    mem_defs = [d for d in candidates if "memory" in d.name.lower()]
-    if not cpu_defs or not mem_defs:
-        found = ", ".join(sorted({d.name for d in candidates})) or "none"
-        raise GuardError(f"Could not identify both A1 CPU and memory service limits through OCI Limits API (A1 limits found: {found}). Creation is blocked.")
+    # OCI also returns DVH, regional, reservable and reserved variants. In
+    # particular, DVH availability can be zero even when standard A1 quota
+    # is available. Only use the ordinary AD-scoped standard A1 limits.
+    wanted = {
+        "ocpu": "standard-a1-core-count",
+        "memory_gb": "standard-a1-memory-count",
+    }
     results: dict[str, Any] = {}
-    for label, entries, needed in (("ocpu", cpu_defs, float(target["ocpus"])), ("memory_gb", mem_defs, float(target["memory_gb"]))):
-        entries = sorted(entries, key=lambda d: 0 if d.scope_type == "AD" else (1 if d.scope_type == "REGION" else 2))
-        checked = False
-        last_error: Exception | None = None
-        for definition in entries:
-            if not getattr(definition, "is_resource_availability_supported", True):
-                continue
-            try:
-                availability = get_resource_availability(
-                    limits, tenancy_id, "compute", definition.name, definition.scope_type,
-                    target["availability_domain"],
-                )
-                remaining = availability.available
-                if remaining is None:
-                    raise GuardError(f"OCI returned no 'available' value for A1 {label} limit {definition.name}.")
-                results[label] = {"limit_name": definition.name, "available": remaining, "used": availability.used,
-                                  "scope_type": definition.scope_type}
-                if float(remaining) < needed:
-                    raise GuardError(f"Insufficient live A1 {label} availability: {remaining} available, {needed:g} required.")
-                checked = True
-                break
-            except oci.exceptions.ServiceError as exc:
-                last_error = exc
-                if exc.status == 404:
-                    continue
-                raise
-        if not checked:
-            if last_error:
-                raise GuardError(f"Unable to verify live A1 {label} availability through OCI Limits API ({last_error.status}/{last_error.code}).")
-            raise GuardError(f"Unable to verify live A1 {label} availability from OCI Limits API.")
-    LOG.info("Live A1 limits verified: CPU remaining=%s; memory remaining=%s GB.", results["ocpu"]["available"], results["memory_gb"]["available"])
+    for label, limit_name in wanted.items():
+        matches = [
+            d for d in definitions
+            if (d.name or "").lower() == limit_name
+            and d.scope_type == "AD"
+            and getattr(d, "is_resource_availability_supported", True)
+        ]
+        if len(matches) != 1:
+            raise GuardError(
+                f"Expected exactly one AD-scoped OCI limit named {limit_name}; "
+                f"found {len(matches)}. Creation is blocked."
+            )
+        availability = get_resource_availability(
+            limits, tenancy_id, "compute", limit_name, "AD",
+            target["availability_domain"],
+        )
+        remaining = availability.available
+        needed = float(target["ocpus"] if label == "ocpu" else target["memory_gb"])
+        if remaining is None or float(remaining) < needed:
+            raise GuardError(
+                f"Insufficient or unknown live A1 {label} availability for {limit_name}: "
+                f"{remaining!r} available, {needed:g} required."
+            )
+        results[label] = {
+            "limit_name": limit_name,
+            "available": remaining,
+            "used": availability.used,
+            "scope_type": "AD",
+        }
+    LOG.info(
+        "Live standard A1 limits verified: CPU remaining=%s; memory remaining=%s GB.",
+        results["ocpu"]["available"], results["memory_gb"]["available"],
+    )
     return results
 
 
