@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import configparser
 import json
+import math
 import os
 import shutil
 import sys
@@ -108,7 +109,7 @@ def _ask_number(prompt: str, default: str, *, integer: bool = False, minimum: fl
         raw = _ask(prompt, default, required=True)
         try:
             value = float(raw)
-            if not value >= minimum:
+            if not math.isfinite(value) or value < minimum:
                 raise ValueError
             if integer:
                 if not value.is_integer():
@@ -161,10 +162,10 @@ def _configure_interactively(config_path: Path) -> int:
     account["allow_paid_resources"] = False
     account["home_region"] = home_region
     account["a1_free_max_ocpu"] = _ask_number(
-        "Verified A1 OCPU policy cap", str(account.get("a1_free_max_ocpu", 2))
+        "Verified A1 OCPU policy cap", str(account.get("a1_free_max_ocpu", 2)), minimum=0.000001
     )
     account["a1_free_max_memory_gb"] = _ask_number(
-        "Verified A1 memory policy cap in GB", str(account.get("a1_free_max_memory_gb", 12))
+        "Verified A1 memory policy cap in GB", str(account.get("a1_free_max_memory_gb", 12)), minimum=0.000001
     )
     account["combined_free_volume_gb"] = _ask_number(
         "Verified combined boot + block volume allowance in GB",
@@ -216,6 +217,9 @@ def _configure_interactively(config_path: Path) -> int:
         return 2
     if target["memory_gb"] > float(account.get("a1_free_max_memory_gb", 12)):
         print("Requested RAM exceeds the configured Free Tier allowance; no changes were saved.")
+        return 2
+    if target["boot_volume_size_gb"] < 50:
+        print("OCI boot volume must be at least 50 GB; no changes were saved.")
         return 2
     if target["boot_volume_size_gb"] > int(account.get("combined_free_volume_gb", 200)):
         print("Boot volume exceeds the configured combined storage allowance; no changes were saved.")
