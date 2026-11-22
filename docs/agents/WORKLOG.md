@@ -162,3 +162,14 @@ For each future milestone, append:
 - Existing wizard tests already verify timestamped backup creation and that a previously armed creation flag/confirmation are forcibly cleared. No duplicate tests were added.
 - No fresh workstation installation, live OCI call, VM launch, production change, or PR merge occurred. `main` remains at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`.
 - Next: verify both Windows jobs, then keep fresh Windows/Linux workstation installation as the remaining manual release gate.
+
+
+## 2026-11-22 — Final CI recheck for installer milestone branch
+
+- Rechecked the latest installer-wizard branch HEAD `b64a44df77faf37f1a41dbf7db7104e694be975d`: both the CLI foundation workflow and Python checks workflow completed successfully.
+- The CLI foundation matrix passed on Ubuntu and Windows with Python 3.11 and 3.12. Python checks passed on Python 3.11 and 3.12.
+- Rechecked PR #5 head `5b91248419182a06216f400296a9f2c0546a2be9`: its Python checks and CLI foundation workflow runs are successful.
+- PR #5 remains an open draft targeting `main`; PR #6 remains an open draft stacked on `feat/cli-v1-foundation`. Neither has review submissions or inline review threads.
+- `main` remains at `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`. Both PRs remain unmerged pending explicit operator approval.
+- Remaining release validation is a fresh real workstation install on Windows and Linux. CI PowerShell syntax parsing is not equivalent to executing the Windows installer end-to-end; Linux integration tests cover clone failure, venv failure, and existing-directory preservation.
+- No live OCI audit, VM launch, account/billing change, production server change, or local workstation installation was performed.
