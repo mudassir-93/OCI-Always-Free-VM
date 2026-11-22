@@ -132,8 +132,8 @@ Do not attach `~/.oci/config`, app config, state files, logs, key files, environ
 
 ## Known coverage gaps
 
-- GitHub Actions currently verifies PowerShell syntax and Linux shell syntax; syntax validation is not equivalent to executing the PowerShell installer end-to-end.
-- The automated installer failure-recovery integration test is POSIX-only. A real Windows fresh-install smoke test remains a release gate.
+- GitHub Actions verifies shell/PowerShell syntax and runs the Windows installer safety integration script. Linux integration tests cover clone failure, virtual-environment failure, and existing-directory preservation.
+- GitHub Actions now executes the PowerShell installer on Windows with a temporary existing directory and a simulated Git-clone failure. This verifies preservation and cleanup behavior without contacting OCI or cloning the live repository. It is not a successful end-to-end installation from the public default branch.
 - A real fresh Linux workstation install has not been performed as part of CI.
 - The interactive wizard should receive dedicated regression tests for backup creation, clearing pre-armed creation flags, invalid VPU settings, and write-free rejection paths if those cases are not already covered by the current test suite.
 - No live OCI audit or VM launch is required to close the local installer milestone.
