@@ -138,14 +138,22 @@ class CliSetupTests(unittest.TestCase):
             config_path = root / "config.json"
             ssh_key = root / "id_ed25519.pub"
             ssh_key.write_text("ssh-ed25519 AAAATEST example", encoding="utf-8")
-            answers = [
-                "y", "", "", "us-phoenix-1", "",
-                "", "", "", "", "", "", "", "y",
-                "example-ad", "ocid1.vcn.example", "", "",
-                "", "", "", "", "", str(ssh_key), "ocid1.image.example", "y",
-                "", "", "", "", "", "", "", "", "y",
-            ]
-            with patch("builtins.input", side_effect=answers), patch(
+            def answer(prompt):
+                if "Free Tier" in prompt or "current-month" in prompt or "Always Free Eligible" in prompt or "Save these settings" in prompt:
+                    return "y"
+                if "Tenancy home region" in prompt:
+                    return "us-phoenix-1"
+                if "Availability Domain" in prompt:
+                    return "example-ad"
+                if "Existing VCN OCID" in prompt:
+                    return "ocid1.vcn.example"
+                if "SSH PUBLIC key" in prompt:
+                    return str(ssh_key)
+                if "Pinned Ubuntu" in prompt:
+                    return "ocid1.image.example"
+                return ""
+
+            with patch("builtins.input", side_effect=answer), patch(
                 "oci_platform.cli.default_state_dir", return_value=root / "state"
             ):
                 output = io.StringIO()
@@ -185,14 +193,22 @@ class CliSetupTests(unittest.TestCase):
 
             ssh_key = root / "id_ed25519.pub"
             ssh_key.write_text("ssh-ed25519 AAAATEST example", encoding="utf-8")
-            answers = [
-                "y", "", "", "us-phoenix-1", "",
-                "", "", "", "", "", "", "", "y",
-                "example-ad", "ocid1.vcn.example", "", "",
-                "", "", "", "", "", str(ssh_key), "ocid1.image.example", "y",
-                "", "", "", "", "", "", "", "", "y",
-            ]
-            with patch("builtins.input", side_effect=answers), patch(
+            def answer(prompt):
+                if "Free Tier" in prompt or "current-month" in prompt or "Always Free Eligible" in prompt or "Save these settings" in prompt:
+                    return "y"
+                if "Tenancy home region" in prompt:
+                    return "us-phoenix-1"
+                if "Availability Domain" in prompt:
+                    return "example-ad"
+                if "Existing VCN OCID" in prompt:
+                    return "ocid1.vcn.example"
+                if "SSH PUBLIC key" in prompt:
+                    return str(ssh_key)
+                if "Pinned Ubuntu" in prompt:
+                    return "ocid1.image.example"
+                return ""
+
+            with patch("builtins.input", side_effect=answer), patch(
                 "oci_platform.cli.default_state_dir", return_value=state_dir
             ):
                 result = main(["--config", str(config_path), "configure"])
