@@ -20,6 +20,10 @@ The intended audience includes technically capable operators and people who use 
 - Optional Telegram notifications via environment variables.
 - Linux runtime; Windows may be used as the developer workstation but is not a supported direct runtime.
 
+## Configurability
+
+The public template is account-neutral. Operators provide their own home region, availability domain, VCN/subnet, image, SSH public-key path, display name, A1 OCPU/memory allocation, boot volume size, OS/version, monthly usage budgets, and local policy caps. The code allows A1 resource sizes within configured limits, validates finite numeric values and whole-GB boot volume sizes, and still checks live OCI quotas and existing resource usage. Public IPv4 and an existing public subnet remain required in this release.
+
 ## Runtime flow
 
 1. Read local JSON config.
@@ -80,6 +84,7 @@ Use config.example.json and placeholder documentation only. If a credential was 
 ## Development commands
 
 ~~~bash
+python oci_free_watch.py --validate-config --config config.json
 python oci_free_watch.py --validate-config --config config.json
 python -m py_compile oci_free_watch.py
 python -m unittest discover -s tests -v
