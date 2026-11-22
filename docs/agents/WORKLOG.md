@@ -11,7 +11,7 @@ This file records repository milestones and agent handoffs. Do not place persona
 - Network provisioning is out of scope; an existing public subnet and Internet Gateway route are required.
 - Local config, OCI credentials, SSH keys, logs, and runtime state must stay outside Git.
 
-## 2026-11-22 — Public multi-user and coding-agent readiness (in progress)
+## 2026-11-22 — Public multi-user and coding-agent readiness (completed)
 
 - Replaced Dubai-specific example region and AD with blank operator-supplied values.
 - Replaced the account-specific SSH key filename and instance display name with generic examples.
@@ -23,7 +23,8 @@ This file records repository milestones and agent handoffs. Do not place persona
 - Added AGENTS.md, CLAUDE.md, GEMINI.md, Copilot instructions, project memory, reusable start prompt, and worklog.
 - Strengthened .gitignore for local config, credentials, key files, logs, and state.
 - Scanned the current branch files for the known account-specific region/AD, public host IPs, OCID patterns, and repository-owner references; no matches remained in the scanned current tree.
-- Pending: run GitHub Actions on a pull request, inspect the complete diff, and confirm there are no code/test regressions.
+- GitHub Actions passed on Python 3.11 and 3.12: dependency install, py_compile, and unittest discovery all succeeded.
+- The reviewed changes were merged into main via PR #1.
 
 ## Handoff template
 
