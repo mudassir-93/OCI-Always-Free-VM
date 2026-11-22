@@ -201,10 +201,11 @@ def _show_config(config_path: Path, config: dict[str, Any]) -> None:
 
 def _show_status(config_path: Path) -> int:
     config = read_config(config_path)
-    state_path = Path(config.get("paths", {}).get("state_file", "")).expanduser()
-    if not str(state_path):
+    state_value = config.get("paths", {}).get("state_file")
+    if not state_value:
         print("No state file is configured.")
         return 0
+    state_path = Path(state_value).expanduser()
     if not state_path.is_file():
         print(f"No automation state found yet: {state_path}")
         return 0
@@ -220,8 +221,12 @@ def _show_logs(config_path: Path, line_count: int) -> int:
     if line_count < 1 or line_count > 10000:
         raise ValueError("--lines must be between 1 and 10000.")
     config = read_config(config_path)
-    log_path = Path(config.get("paths", {}).get("log_file", "")).expanduser()
-    if not str(log_path) or not log_path.is_file():
+    log_value = config.get("paths", {}).get("log_file")
+    if not log_value:
+        print("No log file is configured.")
+        return 0
+    log_path = Path(log_value).expanduser()
+    if not log_path.is_file():
         print(f"No log file found: {log_path}")
         return 0
     lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
