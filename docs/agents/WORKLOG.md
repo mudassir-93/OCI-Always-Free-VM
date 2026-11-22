@@ -184,3 +184,16 @@ For each future milestone, append:
 - Updated the installation smoke-test guide to describe the expanded automated coverage and retain successful clean-machine installation as a manual release gate.
 - Latest docs commit `bbd803b8f40e10a3d31b50538a31ce947937e4da` has fresh CI queued/running; do not mark that exact HEAD green until both workflows complete.
 - No OCI calls, VM launch, production changes, account/billing changes, or PR merges. Main remains untouched.
+
+
+## 2026-11-22 — PR #5 merged; PR #6 retargeted and de-stacked
+
+- User explicitly approved merging PR #5 first and PR #6 second, contingent on latest CI being green.
+- Verified all 10 checks on PR #5 exact HEAD `5b91248419182a06216f400296a9f2c0546a2be9` completed successfully. Marked PR #5 ready and squash-merged it; merge commit is `29b66fbe83655692633b06d1c71157071969c1d6`.
+- Retargeted PR #6 to `main`. GitHub initially showed a stacked diff containing foundation files and a non-mergeable state because the foundation PR had been squash-merged.
+- Merged the new `main` commit into the PR #6 feature branch using a two-parent merge commit with the existing PR #6 tree, then advanced the branch with a fast-forward ref update and expected-head check (no force push).
+- Verified PR #6 now has merge base `main`, reports mergeable=true, and its diff is the intended Milestone 2 delta only: 15 files, 1,287 additions, 6 deletions.
+- New PR #6 HEAD: `4b78ee759e7ec95866abdae2a825a4d095492853`. Fresh CI checks were queued for this exact commit at the time of this entry; do not merge until all required jobs pass.
+- Previous PR #6 code HEAD `55ee2ad3145af0b527ce6d9cf9a427d08a24ebeb` had all six CI checks green, including Windows installer safety integration tests. The new merge commit still requires its own CI.
+- No live OCI API calls, VM launch, billing/IAM changes, EC2 changes, or production deployment changes.
+- Next: verify exact-HEAD PR #6 CI, inspect final diff, then merge PR #6 using expected HEAD SHA and verify main.
