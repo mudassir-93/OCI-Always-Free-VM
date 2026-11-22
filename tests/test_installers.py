@@ -63,6 +63,34 @@ class LinuxInstallerFailureTests(unittest.TestCase):
             self.assertFalse(install_dir.exists(), result.stdout + result.stderr)
             self.assertIn("removed incomplete installation directory", result.stderr)
 
+    def test_venv_failure_removes_new_install_directory(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            home = root / "home"
+            fake_bin = root / "bin"
+            install_dir = root / "new-install"
+            home.mkdir()
+            fake_bin.mkdir()
+
+            fake_python = fake_bin / "python3.12"
+            fake_python.write_text(
+                "#!/bin/sh\\n"
+                'if [ "$1" = "-c" ]; then case "$2" in *sys.version_info*) printf "3.12\\\\n"; exit 0;; esac; fi\\n'
+                'if [ "$1" = "-m" ] && [ "$2" = "venv" ]; then exit 43; fi\\n'
+                'exec "$REAL_PYTHON" "$@"\\n',
+                encoding="utf-8",
+            )
+            fake_python.chmod(0o755)
+            fake_git = fake_bin / "git"
+            fake_git.write_text("#!/bin/sh\\nexit 0\\n", encoding="utf-8")
+            fake_git.chmod(0o755)
+
+            result = self._run_installer(home, install_dir, fake_bin)
+
+            self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertFalse(install_dir.exists(), result.stdout + result.stderr)
+            self.assertIn("removed incomplete installation directory", result.stderr)
+
     def test_existing_install_directory_is_preserved(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
