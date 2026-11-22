@@ -235,11 +235,12 @@ def _configure_interactively(config_path: Path) -> int:
     target["operating_system"] = "Canonical Ubuntu"
     target["operating_system_version"] = "24.04"
     target["boot_volume_vpus_per_gb"] = _ask_number(
-        "Boot volume performance in VPUs per GB", str(target.get("boot_volume_vpus_per_gb", 10)),
+        "Boot volume performance in VPUs per GB (this release supports exactly 10)",
+        str(target.get("boot_volume_vpus_per_gb", 10)),
         integer=True, minimum=10,
     )
-    if target["boot_volume_vpus_per_gb"] > 120:
-        print("Boot volume performance must not exceed 120 VPUs per GB; no changes were saved.")
+    if target["boot_volume_vpus_per_gb"] != 10:
+        print("This release supports exactly 10 VPUs per GB; no changes were saved.")
         return 2
     target["assign_public_ip"] = _ask_yes_no(
         "Assign a public IPv4 address? (required by the current public-subnet workflow)",
