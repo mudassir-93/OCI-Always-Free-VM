@@ -4,7 +4,7 @@
 [![Cross-platform CLI](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/cli-foundation.yml/badge.svg?branch=main)](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/cli-foundation.yml)
 
 
-A lightweight OCI automation application for monitoring Oracle Cloud Infrastructure Ampere A1 capacity and, only after explicit operator approval, requesting one configured Always Free A1 VM. The project is adding a cross-platform `oci-platform` CLI for setup, profile/configuration management, diagnostics, and day-to-day automation control. It uses the official OCI Python SDK.
+A lightweight cross-platform automation tool for acquiring an Oracle Cloud Infrastructure (OCI) Always Free Ampere A1 VM. It monitors A1 host capacity and, only after explicit operator approval and live safety checks, requests one configured VM. The `oci-platform` CLI manages installation, per-user configuration, diagnostics, and monitoring on Windows and Linux using the official OCI Python SDK.
 
 **Default behavior is read-only.** The project never creates or modifies VCNs, subnets, gateways, route tables, security lists, NSGs, reserved IPs, or existing compute instances.
 
