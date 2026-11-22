@@ -13,24 +13,34 @@ Write-Host "This installs local CLI files only. It does not contact your OCI ten
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
     throw "Git is required. Install Git for Windows, reopen PowerShell, and run this installer again."
 }
+$Python = $null
+$PythonArgs = @()
 $PythonCommand = Get-Command py -ErrorAction SilentlyContinue
 if ($PythonCommand) {
-    & py -3.11 --version *> $null
-    if ($LASTEXITCODE -eq 0) {
-        $Python = "py"
-        $PythonArgs = @("-3.11")
-    } else {
-        $Python = "python"
-        $PythonArgs = @()
+    foreach ($Version in @("3.12", "3.11", "3")) {
+        & py "-$Version" --version *> $null
+        if ($LASTEXITCODE -eq 0) {
+            $Python = "py"
+            $PythonArgs = @("-$Version")
+            break
+        }
     }
-} else {
+}
+if (-not $Python) {
     $Python = "python"
     $PythonArgs = @()
 }
-& $Python @PythonArgs --version
+$VersionText = & $Python @PythonArgs --version 2>&1
 if ($LASTEXITCODE -ne 0) {
     throw "Python 3.11 or newer is required."
 }
+if ($VersionText -notmatch "Python 3\.(\d+)") {
+    throw "Could not determine Python version: $VersionText"
+}
+if ([int]$Matches[1] -lt 11) {
+    throw "Python 3.11 or newer is required. Found: $VersionText"
+}
+Write-Host "Using $VersionText"
 
 if (Test-Path $InstallDir) {
     throw "Install directory already exists: $InstallDir. The installer will not overwrite or update existing files. Choose another OCI_PLATFORM_HOME or move the directory after backing it up."
