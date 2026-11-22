@@ -117,3 +117,5 @@ For each future milestone, append:
 - CI for that code HEAD was queued/running when checked; verify exact-HEAD CLI foundation and Python checks before claiming success.
 - No OCI credentials, live API calls, VM launches, production deployment changes, or changes to the `main` working tree remain after the corrective removal of the accidentally placed handoff file.
 - Next: inspect exact-HEAD CI results, fix any failures, then continue PR #6 review and fresh-machine test planning.
+
+- Correction note: the handoff file was briefly created on the default branch due an omitted branch argument. It was removed, and `main` was force-restored with an expected-head lease to its exact pre-change commit `3356f03f52cf5c3a7eeb59b3cccdb76a5e967337`. Verified `main` now points to that original commit. The handoff file exists on `feat/cli-v1-installer-wizard` only.
