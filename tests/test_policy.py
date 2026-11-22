@@ -78,3 +78,18 @@ class PolicyTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+    def test_non_finite_cpu_is_rejected(self):
+        self.target["ocpus"] = float("nan")
+        with self.assertRaises(app.GuardError):
+            app.check_static_free_tier_policy(self.account, self.target)
+
+    def test_fractional_boot_volume_is_rejected(self):
+        self.target["boot_volume_size_gb"] = 50.5
+        with self.assertRaises(app.GuardError):
+            app.check_static_free_tier_policy(self.account, self.target)
+
+    def test_non_finite_monthly_budget_is_rejected(self):
+        self.account["monthly_a1_ocpu_hours"] = float("nan")
+        with self.assertRaises(app.GuardError):
+            app.check_static_free_tier_policy(self.account, self.target)
