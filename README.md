@@ -155,6 +155,7 @@ The installer scripts download the repository into a new user-owned directory, c
 ~~~powershell
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/mudassir-93/OCI-Always-Free-VM/main/install.ps1" -OutFile install.ps1
 Get-Content .\install.ps1
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\install.ps1
 ~~~
 
