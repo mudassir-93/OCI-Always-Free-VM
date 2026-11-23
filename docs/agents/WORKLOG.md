@@ -257,3 +257,12 @@ For each future milestone, append:
 - The user's existing Windows installation has not yet been updated. The known checkout is %USERPROFILE%\oci-automation-platform, with the application config stored separately under %APPDATA%\oci-platform\config.json. Preserve that config; update the existing checkout in place, not by rerunning the installer.
 - Manual Windows Terminal interaction remains pending: test the home menu, field editing, region auto-sync, back/cancel, review/save, and Ctrl+C. Keep creation disabled.
 - No OCI API calls, VM launches, billing/IAM/network changes, local workstation modifications, or production deployments were performed.
+
+## 2026-11-23 — Workstation-independent release documentation review
+
+- Reviewed the merged CLI/installer/interactive UX documentation while the operator's Windows PC was unavailable.
+- Corrected a stale README sentence that still described the merged CLI, wizard, and installers as pending milestones.
+- Replaced the duplicated and contradictory `AI_HANDOFF.md` with a current continuation record: verified main HEAD, merged PRs #5–#7, exact post-merge CI run IDs, safety boundaries, remaining manual Windows Terminal validation, and the safe update procedure for the existing checkout.
+- Proposed as PR #8: https://github.com/mudassir-93/OCI-Always-Free-VM/pull/8. This is a documentation-only branch; no application code or dependencies changed.
+- Automated CI is expected to validate the PR head. Manual Windows Terminal interaction remains NOT RUN because the operator's PC is unavailable.
+- No local workstation changes, OCI API calls, VM launches, billing/IAM changes, EC2 changes, or production deployments were performed.
