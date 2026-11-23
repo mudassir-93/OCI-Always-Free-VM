@@ -45,8 +45,8 @@ def _select(message: str, choices: list[str], *, default: str | None = None) -> 
         default=default,
         use_arrow_keys=True,
         use_jk_keys=True,
-        qmark="◆",
-        instruction="(↑/↓ move · Enter select · Ctrl+C cancel)",
+        qmark=">",
+        instruction="(Up/Down move · Enter select · Ctrl+C cancel)",
         style=_STYLE,
     ).ask()
     if value is None:
@@ -59,7 +59,7 @@ def _text(message: str, current: Any = "", *, hint: str = "") -> str:
         message,
         default="" if current is None else str(current),
         instruction=hint or "Press Enter to keep the current value",
-        qmark="✎",
+        qmark=">",
         style=_STYLE,
     ).ask()
     if value is None:
@@ -68,7 +68,7 @@ def _text(message: str, current: Any = "", *, hint: str = "") -> str:
 
 
 def _confirm(message: str, default: bool = False) -> bool:
-    value = questionary.confirm(message, default=default, qmark="◆", style=_STYLE).ask()
+    value = questionary.confirm(message, default=default, qmark=">", style=_STYLE).ask()
     if value is None:
         raise UserCancelled
     return bool(value)
@@ -137,7 +137,7 @@ def _edit_number(
     minimum: float = 0,
 ) -> int | float:
     while True:
-        raw = _text(label, current, hint=f"Enter a {'whole number' if integer else 'number'} ≥ {minimum:g}")
+        raw = _text(label, current, hint=f"Enter a {'whole number' if integer else 'number'} >= {minimum:g}")
         try:
             value = float(raw)
             if not math.isfinite(value) or value < minimum:
@@ -177,7 +177,7 @@ def _edit_identity(config: dict[str, Any]) -> None:
             "ad": _field_choice("Availability domain", target.get("availability_domain", "")),
             "vcn": _field_choice("Existing VCN OCID", target.get("vcn_ocid", ""), secret=True),
             "subnet": _field_choice("Existing public subnet OCID", target.get("subnet_ocid", ""), secret=True),
-            "back": "← Back to configuration menu",
+            "back": "< Back to configuration menu",
         }
         selected = _select(
             "Account, region and existing network — select a field to edit",
@@ -257,7 +257,7 @@ def _edit_compute(config: dict[str, Any]) -> None:
             "ocpus": _field_choice(fields[1][0], target.get("ocpus", 2)),
             "memory": _field_choice(fields[2][0], target.get("memory_gb", 4)),
             "boot": _field_choice(fields[3][0], target.get("boot_volume_size_gb", 150)),
-            "back": "← Back to configuration menu",
+            "back": "< Back to configuration menu",
         }
         selected = _select("A1 compute and storage — select a field to edit", [labels[key] for _, key in fields])
         key = next(key for _, key in fields if labels[key] == selected)
@@ -304,7 +304,7 @@ def _edit_budget(config: dict[str, Any]) -> None:
             "back": "",
         }
         labels = {key: _field_choice(label, getters[key]) for label, key in fields}
-        labels["back"] = "← Back to configuration menu"
+        labels["back"] = "< Back to configuration menu"
         selected = _select("Free Tier policy and monthly usage — select a field to edit", [labels[key] for _, key in fields])
         key = next(key for _, key in fields if labels[key] == selected)
         if key == "back":
@@ -342,7 +342,7 @@ def _edit_image_access(config: dict[str, Any]) -> None:
             "ssh": _field_choice(entries[0][0], target.get("ssh_public_key_file", "")),
             "image": _field_choice(entries[1][0], target.get("image_ocid", ""), secret=True),
             "eligible": _field_choice(entries[2][0], "Yes" if target.get("image_console_always_free_confirmed") else "No"),
-            "back": "← Back to configuration menu",
+            "back": "< Back to configuration menu",
         }
         selected = _select("Image and SSH access — select a field to edit", [values[key] for _, key in entries])
         key = next(key for _, key in entries if values[key] == selected)
@@ -399,7 +399,7 @@ def _edit_runtime(config: dict[str, Any]) -> None:
             "back": "",
         }
         labels = {key: _field_choice(label, current[key]) for label, key in entries}
-        labels["back"] = "← Back to configuration menu"
+        labels["back"] = "< Back to configuration menu"
         selected = _select("Monitoring and local paths — select a field to edit", [labels[key] for _, key in entries])
         key = next(key for _, key in entries if labels[key] == selected)
         if key == "back":
@@ -512,9 +512,9 @@ def review_configuration(config_path: Path, config: dict[str, Any]) -> None:
     target = config.get("target", {})
     oci = config.get("oci", {})
     mode = config.get("mode", {})
-    print("\n" + "═" * 66)
+    print("\n" + "=" * 66)
     print(" CONFIGURATION REVIEW")
-    print("═" * 66)
+    print("=" * 66)
     print(f"Config file          : {config_path}")
     print(f"OCI SDK profile      : {oci.get('profile', 'DEFAULT')}")
     print(f"OCI SDK config       : {oci.get('config_file') or 'Not set'}")
@@ -532,7 +532,7 @@ def review_configuration(config_path: Path, config: dict[str, Any]) -> None:
     print(f"Log level            : {config.get('logging', {}).get('level', 'INFO')}")
     print("VM creation           : DISABLED")
     print("Credentials and OCIDs are deliberately not shown.")
-    print("═" * 66)
+    print("=" * 66)
     issues = validate_configuration(config)
     if issues:
         print("\nItems to fix before this configuration is complete:")
@@ -564,11 +564,11 @@ def run_config_wizard(
     config.setdefault("mode", {})["creation_enabled"] = False
     config["mode"]["creation_confirmation"] = ""
 
-    print("\n" + "═" * 66)
+    print("\n" + "=" * 66)
     print(" OCI AUTOMATION PLATFORM — CONFIGURATION")
     print(" Local-only setup · no OCI API calls · no cloud resource changes")
-    print(" Use ↑/↓ and Enter to select; choose any section to edit its values.")
-    print("═" * 66)
+    print(" Use Up/Down and Enter to select; choose any section to edit its values.")
+    print("=" * 66)
     if not _confirm(
         "Do you confirm this tenancy is still on OCI Free Tier (not upgraded to Paid)?",
         default=config.get("account", {}).get("free_tier_only_confirmed") is True,
