@@ -3,7 +3,7 @@
 **Status checked:** 2026-11-23  
 **Repository:** [mudassir-93/OCI-Always-Free-VM](https://github.com/mudassir-93/OCI-Always-Free-VM)  
 **Default branch at review:** `main`  
-**Latest main commit inspected:** `8c8d3ea18a2dd451c531a3f62d33cc013ce690a9`
+**Latest main commit inspected:** `fb46199e16739f30edd5045b7a4282b275cc3bfb`
 
 ## Executive summary
 
@@ -19,7 +19,9 @@ The agreed V1 repository implementation is complete: the existing A1 automation 
 | Interactive terminal UX — PR #7 | Complete in code | Arrow-key home menu and grouped configuration editor are merged; offline tests cover validation, backup/disarm, cancellation, region sync and safe profile selection. Real Windows Terminal interaction is pending. |
 | Project handoff/documentation — PR #8 | Complete | README release status and AI handoff were consolidated and merged. |
 | Automated CI for PR #8 | 6/6 jobs passed | Exact PR head `dfe10f57ffb6adae34b996ae3d65b1f094b9f8ca`: Python checks 3.11/3.12 and Windows/Linux CLI matrix 3.11/3.12 all passed. |
-| Existing Windows checkout update | Pending | Earlier install/starter configuration exists, but the checkout has not been updated to the latest merged main after PR #7/#8. |
+| Progress tracker and roadmap — PR #9 | Merged | Added the consolidated status report, handoff links, and clarified offline versus live validation boundaries. |
+| Automated CI for PR #9 | 6/6 jobs passed | Exact PR head `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a`: Python checks run `45110780545` (3.11/3.12) and CLI foundation run `45110780528` (Windows/Linux × 3.11/3.12) all passed before squash merge. |
+| Existing Windows checkout update | Pending | Earlier install/starter configuration exists, but the checkout has not been updated to the latest merged main after PR #7–#9. |
 | Manual workstation validation | Pending | Windows Terminal smoke test and fresh Linux installation have not been observed. |
 | Real OCI tenancy validation | Not started | No live read-only OCI audit or capacity check has been performed. |
 | Actual A1 VM launch | Not performed; optional | Creation remains disabled by default. A launch is not required for local CLI validation and must not be attempted without separate explicit approval. |
@@ -47,6 +49,7 @@ The agreed V1 scope is intentionally narrow:
 | Installer and guided configuration | [PR #6](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/6) | **MERGED** |
 | Interactive terminal menu and editor | [PR #7](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/7) | **MERGED** |
 | Release documentation and AI handoff cleanup | [PR #8](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/8) | **MERGED** |
+| Consolidated progress tracker and roadmap | [PR #9](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/9) | **MERGED** |
 
 ### What the delivered CLI contains
 
@@ -64,6 +67,13 @@ The exact PR #8 head `dfe10f57ffb6adae34b996ae3d65b1f094b9f8ca` passed:
 
 - **Python checks:** run `45109638479`, Python 3.11 and 3.12.
 - **CLI foundation:** run `45109638472`, Windows and Ubuntu with Python 3.11 and 3.12 (four matrix jobs).
+
+The exact PR #9 head `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a` also passed all six jobs before squash merge:
+
+- **Python checks:** run `45110780545`, Python 3.11 and 3.12.
+- **CLI foundation:** run `45110780528`, Ubuntu and Windows with Python 3.11 and 3.12 (four matrix jobs).
+
+PR #9 was squash-merged as main commit `fb46199e16739f30edd5045b7a4282b275cc3bfb`. The available combined-status and PR-run lookup did not expose a separate post-merge push-triggered run for that merge commit; do not claim one was verified.
 
 The Windows jobs include PowerShell installer parsing, Windows installer preservation/failure integration tests, offline tests, packaging and CLI entry-point checks. Ubuntu jobs include compilation, shell syntax, offline tests, packaging and CLI entry-point checks.
 

@@ -278,3 +278,14 @@ For each future milestone, append:
 - Updated README.md, AI_HANDOFF.md, and PROJECT_MEMORY.md to link to the status tracker. Corrected the installation smoke checklist because existing tests already cover backup/disarm behavior and unsupported VPU write-free rejection.
 - Documentation-only change. No source code, dependencies, user workstation, OCI resources, billing/IAM, EC2 or production deployment changed. No live OCI calls or VM launch were performed.
 - Next: complete manual Windows checkout update and terminal smoke tests when the PC is available; then finish local-only validation, and request separate approval before any live OCI read-only audit.
+
+
+## 2026-11-23 — PR #9 merged; progress tracker synchronized
+
+- Merged PR #9 `docs: add project progress and remaining roadmap` into `main` after reviewing its six-file documentation-only diff and confirming all six required CI jobs passed on exact head `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a`.
+- PR #9 CI: Python checks run `45110780545` passed on Python 3.11/3.12; CLI foundation run `45110780528` passed on Windows/Linux × Python 3.11/3.12.
+- Merge commit: `fb46199e16739f30edd5045b7a4282b275cc3bfb`.
+- Parallel static review tracks found no open issues or PRs, confirmed the three launch guards and read-only audit/once restrictions in source, and found no TODO/FIXME/XXX or `shell=True` search hits. This was a scoped static review, not a formal security audit.
+- The PR #9 merge commit did not expose a separate post-merge push workflow through the available commit-status/run lookup; only the exact PR-head CI is claimed as verified.
+- No source code, dependencies, workstation files, OCI resources, billing/IAM, EC2, or production deployment changed. No live OCI calls or VM launch were performed.
+- Next work remains operator-side: update the existing Windows checkout when the PC is available, complete manual terminal/local validation, and request separate approval before a live read-only OCI audit.
