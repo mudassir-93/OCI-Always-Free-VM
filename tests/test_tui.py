@@ -141,6 +141,7 @@ class TuiPersistenceTests(unittest.TestCase):
             self.assertTrue(previous["mode"]["creation_enabled"])
             self.assertEqual(previous["mode"]["creation_confirmation"], "LAUNCH_ONE_ALWAYS_FREE_INSTANCE")
             self.assertIn("VM creation remains DISABLED", output.getvalue())
+            output.getvalue().encode("cp1252")
 
     def test_cancel_leaves_existing_file_untouched(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -152,9 +153,10 @@ class TuiPersistenceTests(unittest.TestCase):
             write_config(config_path, config)
             original = read_config(config_path)
 
+            output = io.StringIO()
             with patch("oci_platform.tui._confirm", return_value=True), patch(
                 "oci_platform.tui._select", return_value="Cancel without saving"
-            ):
+            ), contextlib.redirect_stdout(output):
                 result = run_config_wizard(
                     config_path,
                     default_state_dir=root / "state",
@@ -162,6 +164,8 @@ class TuiPersistenceTests(unittest.TestCase):
                     write_config=write_config,
                 )
 
+            # The UI is intentionally printable on the default Windows cp1252 console.
+            output.getvalue().encode("cp1252")
             self.assertEqual(result, 1)
             self.assertEqual(read_config(config_path), original)
             self.assertEqual(list(root.glob("config.json.*.bak")), [])
