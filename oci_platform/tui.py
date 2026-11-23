@@ -441,6 +441,12 @@ def validate_configuration(config: dict[str, Any]) -> list[str]:
         issues.append("Enter a valid tenancy home region, for example us-phoenix-1.")
     if target.get("region") != home_region:
         issues.append("Target region must match the tenancy home region.")
+    if target.get("shape") != "VM.Standard.A1.Flex":
+        issues.append("This release supports only VM.Standard.A1.Flex.")
+    if target.get("operating_system") != "Canonical Ubuntu" or target.get("operating_system_version") != "24.04":
+        issues.append("This release supports Canonical Ubuntu 24.04 only.")
+    if not str(target.get("display_name", "")).strip():
+        issues.append("Instance display name is required.")
     if not str(target.get("availability_domain", "")).strip():
         issues.append("Availability domain is required.")
     if not str(target.get("vcn_ocid", "")).startswith("ocid1.vcn."):
@@ -456,12 +462,20 @@ def validate_configuration(config: dict[str, Any]) -> list[str]:
     try:
         ocpu_cap = float(account.get("a1_free_max_ocpu", 0))
         memory_cap = float(account.get("a1_free_max_memory_gb", 0))
-        volume_cap = int(account.get("combined_free_volume_gb", 0))
-        ocpus = int(target.get("ocpus", 0))
-        memory = int(target.get("memory_gb", 0))
-        boot = int(target.get("boot_volume_size_gb", 0))
-        if not all(math.isfinite(number) for number in (ocpu_cap, memory_cap)):
+        volume_cap_raw = float(account.get("combined_free_volume_gb", 0))
+        ocpus_raw = float(target.get("ocpus", 0))
+        memory_raw = float(target.get("memory_gb", 0))
+        boot_raw = float(target.get("boot_volume_size_gb", 0))
+        if not all(math.isfinite(number) for number in (
+            ocpu_cap, memory_cap, volume_cap_raw, ocpus_raw, memory_raw, boot_raw
+        )):
             raise ValueError
+        if not all(number.is_integer() for number in (volume_cap_raw, ocpus_raw, memory_raw, boot_raw)):
+            raise ValueError
+        volume_cap = int(volume_cap_raw)
+        ocpus = int(ocpus_raw)
+        memory = int(memory_raw)
+        boot = int(boot_raw)
         if ocpu_cap <= 0 or memory_cap <= 0 or volume_cap <= 0:
             raise ValueError
         if ocpus <= 0 or ocpus > ocpu_cap:
@@ -566,6 +580,14 @@ def run_config_wizard(
     account["account_type"] = "FREE_TIER"
     account["free_tier_only_confirmed"] = True
     account["allow_paid_resources"] = False
+    target = config.setdefault("target", {})
+    if account.get("home_region"):
+        target["region"] = account["home_region"]
+    target["shape"] = "VM.Standard.A1.Flex"
+    target["operating_system"] = "Canonical Ubuntu"
+    target["operating_system_version"] = "24.04"
+    target["boot_volume_vpus_per_gb"] = 10
+    target["assign_public_ip"] = True
 
     sections = [
         ("Account, region and existing network", _edit_identity),
