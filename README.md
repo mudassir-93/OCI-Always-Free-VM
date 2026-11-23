@@ -68,7 +68,8 @@ The example config uses conservative policy caps. The live Limits API check is s
 ├── systemd/oci-free-watch.service
 ├── tests/
 │   ├── test_policy.py
-│   └── test_cli.py
+│   ├── test_cli.py
+│   └── test_tui.py
 ├── SECURITY.md
 ├── .env.example
 ├── .claude/commands/work.md
