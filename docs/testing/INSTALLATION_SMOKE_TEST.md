@@ -166,3 +166,15 @@ Do not call the installer milestone release-ready until:
 5. configuration remains creation-disabled after setup/configure;
 6. no secrets or account-specific identifiers are present in committed files or test evidence;
 7. the operator has reviewed and approved the PRs before merge.
+
+
+## Manual result reported by the operator — 2026-11-23
+
+**Windows fresh installation on a second PC: PASS (operator-reported).** The operator confirmed the fresh download/installation and the supplied CLI/interactive checks worked. The checks discussed in this test session covered:
+
+- installer completion on a separate PC;
+- `oci-platform --version`, `--help`, and redacted `config show`;
+- opening the interactive home menu;
+- navigating the configuration editor and cancelling without proceeding to a live OCI operation.
+
+This is a user-reported result, not an independently captured test transcript. Exact Windows version, Python version, installed commit, console output, and screenshots were not supplied. Do not infer that the separate existing-directory sentinel test, installer failure-cleanup test, `configure --plain`, local `doctor`, Linux installation, or any live OCI operation passed. Keep those checks separate in the project tracker until explicitly verified.

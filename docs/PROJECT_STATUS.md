@@ -3,13 +3,13 @@
 **Status checked:** 2026-11-23  
 **Repository:** [mudassir-93/OCI-Always-Free-VM](https://github.com/mudassir-93/OCI-Always-Free-VM)  
 **Default branch at review:** `main`  
-**Latest main commit inspected:** `fb46199e16739f30edd5045b7a4282b275cc3bfb`
+**Latest main commit inspected:** `e60bbc76854b5a712f72a5c63ff6a1e5ee1f884b`
 
 ## Executive summary
 
 The agreed V1 repository implementation is complete: the existing A1 automation engine is wrapped in a cross-platform CLI, installers and guided configuration are merged, the arrow-key terminal interface is merged, and the project handoff documentation is current.
 
-**The code-delivery phase is complete; end-to-end operator validation is not.** The user's Windows computer is unavailable, so the latest main branch has not yet been pulled into the existing local checkout and the interactive terminal UI has not been manually exercised there. No real OCI tenancy audit, capacity-monitoring run, or VM launch has been performed.
+**The code-delivery phase is complete; end-to-end operator validation is still in progress.** On 2026-11-23, the operator reported that a fresh Windows installation and CLI/interactive terminal smoke test worked on a second PC. The original Windows checkout has not yet been confirmed updated. Fresh Linux workstation installation, separate existing-directory protection verification, local operator diagnostics, and all live OCI validation remain outstanding. No VM launch has been performed.
 
 | Workstream | Progress | Evidence / limitation |
 |---|---|---|
@@ -20,9 +20,12 @@ The agreed V1 repository implementation is complete: the existing A1 automation 
 | Project handoff/documentation — PR #8 | Complete | README release status and AI handoff were consolidated and merged. |
 | Automated CI for PR #8 | 6/6 jobs passed | Exact PR head `dfe10f57ffb6adae34b996ae3d65b1f094b9f8ca`: Python checks 3.11/3.12 and Windows/Linux CLI matrix 3.11/3.12 all passed. |
 | Progress tracker and roadmap — PR #9 | Merged | Added the consolidated status report, handoff links, and clarified offline versus live validation boundaries. |
+| Handoff synchronization — PR #10 | Merged | Synchronized the status tracker and AI handoff to PR #9, recorded its CI evidence, and corrected the README test-file tree. |
+| Automated CI for PR #10 | 6/6 jobs passed | Exact PR head `e6d39d94067a7261d893df5cc5a0b4d19288eb26`: Python checks run `45113875820` and CLI foundation run `45113875739`; Windows/Linux × Python 3.11/3.12 all passed before squash merge. |
 | Automated CI for PR #9 | 6/6 jobs passed | Exact PR head `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a`: Python checks run `45110780545` (3.11/3.12) and CLI foundation run `45110780528` (Windows/Linux × 3.11/3.12) all passed before squash merge. |
-| Existing Windows checkout update | Pending | Earlier install/starter configuration exists, but the checkout has not been updated to the latest merged main after PR #7–#9. |
-| Manual workstation validation | Pending | Windows Terminal smoke test and fresh Linux installation have not been observed. |
+| Fresh Windows PC installation and CLI/TUI smoke test | Passed — operator-reported | On 2026-11-23, the operator confirmed the fresh download/install and the described version/help/config-summary, home-menu, and configuration-editor checks worked on a second PC. Exact OS/Python versions and captured output were not supplied; this is not an independently observed test run. |
+| Existing Windows checkout update | Pending | This second-PC fresh install does not confirm that the original `$HOME\oci-automation-platform` checkout has been updated in place. |
+| Manual workstation validation | Partially complete | Windows fresh install and interactive smoke test are reported passed. Fresh Linux installation and a separate existing-directory sentinel test remain unconfirmed. |
 | Real OCI tenancy validation | Not started | No live read-only OCI audit or capacity check has been performed. |
 | Actual A1 VM launch | Not performed; optional | Creation remains disabled by default. A launch is not required for local CLI validation and must not be attempted without separate explicit approval. |
 
@@ -50,6 +53,7 @@ The agreed V1 scope is intentionally narrow:
 | Interactive terminal menu and editor | [PR #7](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/7) | **MERGED** |
 | Release documentation and AI handoff cleanup | [PR #8](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/8) | **MERGED** |
 | Consolidated progress tracker and roadmap | [PR #9](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/9) | **MERGED** |
+| Handoff and release-state synchronization | [PR #10](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/10) | **MERGED** |
 
 ### What the delivered CLI contains
 
@@ -73,7 +77,14 @@ The exact PR #9 head `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a` also passed all 
 - **Python checks:** run `45110780545`, Python 3.11 and 3.12.
 - **CLI foundation:** run `45110780528`, Ubuntu and Windows with Python 3.11 and 3.12 (four matrix jobs).
 
-PR #9 was squash-merged as main commit `fb46199e16739f30edd5045b7a4282b275cc3bfb`. The available combined-status and PR-run lookup did not expose a separate post-merge push-triggered run for that merge commit; do not claim one was verified.
+PR #9 was squash-merged as main commit `fb46199e16739f30edd5045b7a4282b275cc3bfb`.
+
+The exact PR #10 head `e6d39d94067a7261d893df5cc5a0b4d19288eb26` passed all six jobs before squash merge:
+
+- **Python checks:** run `45113875820`, Python 3.11 and 3.12.
+- **CLI foundation:** run `45113875739`, Ubuntu and Windows with Python 3.11 and 3.12 (four matrix jobs).
+
+PR #10 was squash-merged as main commit `e60bbc76854b5a712f72a5c63ff6a1e5ee1f884b`. The available commit lookup did not expose a separate post-merge push-triggered run for that merge commit; do not claim one was verified.
 
 The Windows jobs include PowerShell installer parsing, Windows installer preservation/failure integration tests, offline tests, packaging and CLI entry-point checks. Ubuntu jobs include compilation, shell syntax, offline tests, packaging and CLI entry-point checks.
 
@@ -83,7 +94,7 @@ These are CI results for the exact PR head before the documentation-only squash 
 
 ### 1. Update the existing Windows checkout
 
-**State: BLOCKED until the PC is available.**
+**State: PENDING for the original checkout.** A separate fresh install on another PC has now been reported working; that does not update the original checkout.
 
 The known checkout is `$HOME\oci-automation-platform`. The per-user app configuration is separate at `%APPDATA%\oci-platform\config.json`. Preserve it. **Do not rerun the installer** because the installer refuses to overwrite an existing directory.
 
@@ -98,13 +109,13 @@ The safe PowerShell block is maintained in [AI_HANDOFF.md](../AI_HANDOFF.md).
 
 ### 2. Manually smoke-test the interactive editor
 
-**State: NOT RUN on the user's real Windows Terminal.**
+**State: PASSED — operator-reported on a second Windows PC (2026-11-23).**
 
-Check arrow keys, j/k, Enter, home-menu navigation, category/field selection, editing, back navigation, cancellation, review, and Ctrl+C. Confirm home-region auto-sync and that profile choices show names only. Verify no unexpected file write occurs on cancellation. Keep VM creation disabled.
+The operator confirmed the fresh install and the test sequence's CLI version/help, redacted config summary, interactive home menu, and configuration editor navigation all worked. The operator was instructed to cancel without saving and keep VM creation disabled. Exact OS/Python versions, commit SHA installed, and command output were not captured, so this is recorded as operator-reported rather than independently reproduced. A separate existing-directory sentinel test and line-oriented `--plain` fallback have not been confirmed.
 
 ### 3. Complete local configuration and local diagnostics
 
-**State: NOT VERIFIED on the user's current machine.**
+**State: NOT VERIFIED.** The fresh-PC smoke test used a temporary test config and did not establish readiness of the operator's real OCI SDK profile or tenancy configuration.
 
 After the local OCI SDK profile already exists, configure the application with the operator's own region, existing network, SSH public-key path, approved A1 sizing, budgets, pinned image and required attestations. Keep credentials and OCIDs out of Git and chat.
 
@@ -145,7 +156,7 @@ No launch, account upgrade, network change or existing-instance modification has
 
 ## Known validation limits
 
-- GitHub Actions is not a substitute for a real interactive session in Windows Terminal.
+- GitHub Actions is not a substitute for a real interactive session in Windows Terminal. A second-PC Windows fresh install and interactive smoke test were reported passed by the operator on 2026-11-23; no screenshots/logs or OS/Python version details were collected.
 - The Windows installer integration test verifies existing-directory preservation and cleanup after a simulated Git clone failure; it is not a successful fresh installation from the public repository.
 - Linux CI covers installation failure cleanup and existing-directory preservation; a fresh Linux workstation installation remains unobserved.
 - Unit tests use local fixtures/mocks; they cannot establish the state of the user's live OCI tenancy, billing plan, IAM visibility, image eligibility or available A1 capacity.
@@ -161,3 +172,4 @@ As of this review:
 - No local Windows or Linux workstation files were changed.
 - No OCI API calls, VM launches, networking changes, billing/IAM changes, EC2 changes or production deployments were performed.
 - No credentials, private keys, personal OCIDs or production host details were added to the repository.
+- The second-PC Windows smoke-test result is based on the operator's confirmation; no test files, logs, credentials, or machine-specific details were uploaded.
