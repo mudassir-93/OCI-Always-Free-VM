@@ -289,3 +289,13 @@ For each future milestone, append:
 - The PR #9 merge commit did not expose a separate post-merge push workflow through the available commit-status/run lookup; only the exact PR-head CI is claimed as verified.
 - No source code, dependencies, workstation files, OCI resources, billing/IAM, EC2, or production deployment changed. No live OCI calls or VM launch were performed.
 - Next work remains operator-side: update the existing Windows checkout when the PC is available, complete manual terminal/local validation, and request separate approval before a live read-only OCI audit.
+
+
+## 2026-11-23 — Operator-reported fresh Windows PC smoke test passed
+
+- The operator reported that they downloaded/installed the project on a second PC and confirmed that everything in the supplied fresh-Windows test sequence worked.
+- Recorded as an operator-reported manual pass for fresh install, `oci-platform --version`, `--help`, redacted `config show`, interactive home menu, and configuration-editor navigation/cancel path as described in the preceding test instructions.
+- Exact Windows build, Python version, installed commit SHA, command transcripts, and screenshot evidence were not supplied. Do not describe this result as independently reproduced by CI or by this agent.
+- This result does not establish that the original Windows checkout was updated, that the separate existing-directory/sentinel preservation test passed, that fresh Linux installation passed, or that the real OCI SDK profile/tenancy was validated.
+- Fresh Linux workstation install, original Windows checkout update, local OCI configuration/doctor validation, and explicitly approved read-only live OCI audit/capacity checks remain pending. Actual VM creation remains optional and disabled.
+- No repository application code, dependencies, workstation files, OCI resources, billing/IAM, EC2, or production deployments were changed as part of this test report. No live OCI calls or VM launch were performed.
