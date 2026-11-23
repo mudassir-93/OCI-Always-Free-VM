@@ -34,7 +34,7 @@ The agent should read these files in this order:
 4. `docs/agents/WORKLOG.md` — completed milestones, known limitations, and handoff notes.
 5. Relevant source code and tests for the task.
 
-The reusable prompt is in [docs/agents/START_PROMPT.md](START_PROMPT.md). Copy it into any agent when you want a full project briefing. It tells the agent to inspect the repository first, explain its understanding, plan the work, preserve the safety model, test changes, update documentation, and report the result.
+The reusable prompt is in [reusable start prompt](START_PROMPT.md). Copy it into any agent when you want a full project briefing. It tells the agent to inspect the repository first, explain its understanding, plan the work, preserve the safety model, test changes, update documentation, and report the result.
 
 ### 3. Start a task — copy one of these prompts
 
