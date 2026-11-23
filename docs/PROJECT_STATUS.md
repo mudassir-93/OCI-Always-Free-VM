@@ -43,10 +43,10 @@ The agreed V1 scope is intentionally narrow:
 | Milestone | Delivery | State |
 |---|---|---|
 | Existing engine and policy baseline | A1 capacity workflow, Free Tier policy checks, existing network validation, quota/storage/usage checks, retry/state safeguards | Implemented in source; live tenancy verification pending |
-| Cross-platform CLI foundation | [PR #5](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/5) | <badge>MERGED</badge> |
-| Installer and guided configuration | [PR #6](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/6) | <badge>MERGED</badge> |
-| Interactive terminal menu and editor | [PR #7](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/7) | <badge>MERGED</badge> |
-| Release documentation and AI handoff cleanup | [PR #8](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/8) | <badge>MERGED</badge> |
+| Cross-platform CLI foundation | [PR #5](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/5) | **MERGED** |
+| Installer and guided configuration | [PR #6](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/6) | **MERGED** |
+| Interactive terminal menu and editor | [PR #7](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/7) | **MERGED** |
+| Release documentation and AI handoff cleanup | [PR #8](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/8) | **MERGED** |
 
 ### What the delivered CLI contains
 
