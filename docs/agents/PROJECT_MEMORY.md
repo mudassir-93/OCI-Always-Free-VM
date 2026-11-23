@@ -65,6 +65,7 @@ Important limitations:
 
 - oci_free_watch.py — existing engine, policy guards, OCI API calls, audit, capacity monitoring, launch, retries, notifications, and state.
 - oci_platform/cli.py — cross-platform command hierarchy, local setup, diagnostics, profile selection, and engine integration.
+- oci_platform/tui.py — arrow-key terminal home menu, grouped configuration editor, local validation, and safe review/save workflow.
 - oci_platform/templates/config.example.json — packaged, account-neutral first-run configuration.
 - pyproject.toml — installable Python project and `oci-platform` console entry point.
 - tests/test_cli.py — offline tests for setup, profile handling, command safety, engine argv integration, and process locking.
@@ -129,7 +130,7 @@ The first implementation milestone is being developed on `feat/cli-v1-foundation
 - VM audit and once remain read-only. VM monitor remains read-only unless the operator explicitly supplies the creation CLI switch; the engine's existing two local confirmations and live preflight checks remain mandatory.
 - The engine now accepts an argv list for safe in-process CLI integration and uses platform-specific non-blocking process locking instead of importing POSIX `fcntl` unconditionally.
 - GitHub Actions is configured to test Windows and Linux on Python 3.11 and 3.12. CI results must be checked before considering this milestone complete.
-- One-command GitHub installer, guided setup wizard, automatic update/rollback, and dashboard are not part of this first foundation milestone.
+- The first foundation milestone did not include the later installer, configuration wizard, or interactive terminal home screen; these were delivered in Milestone 2 and the follow-up terminal UX milestone.
 
 ## CLI V1 Milestone 2 — installer and guided configuration (in progress)
 
@@ -143,3 +144,15 @@ The first implementation milestone is being developed on `feat/cli-v1-foundation
 - Added CI syntax validation for both installer scripts.
 - The installers become usable from the public default branch only after this PR and the CLI foundation dependency are reviewed and merged.
 - No live OCI operations or production deployments were performed.
+
+
+## Interactive terminal UX milestone (in progress)
+
+- Added Questionary-powered arrow-key menus for an interactive home screen when oci-platform is run without arguments in a real terminal.
+- Added grouped field-by-field configuration editing for OCI profile, home region, availability domain, existing VCN/subnet, A1 sizing/storage, policy budgets, usage attestations, SSH public key, pinned Ubuntu image, retry settings, local paths, and logging.
+- The target region follows the configured home region automatically. The UI validates the local SDK config/profile, OCI region format, identifier prefixes, SSH public-key file, supported A1/Ubuntu settings, integer resource sizing, and local resource caps before saving.
+- Review-before-save, timestamped backups, cancel-without-save, Ctrl+C/EOF handling, and a line-oriented --plain fallback preserve usability in non-interactive sessions.
+- The home menu only offers local actions; cloud audit/monitor operations remain explicit subcommands. No live OCI APIs are called by the terminal editor.
+- Every successful wizard save reasserts account_type=FREE_TIER, allow_paid_resources=false, mode.creation_enabled=false, and an empty creation confirmation phrase.
+- Questionary is pinned as a small pure-Python UI dependency; the OCI SDK and engine remain unchanged.
+- Cross-platform automated validation is pending for this branch; do not describe this milestone as complete until CI passes.
