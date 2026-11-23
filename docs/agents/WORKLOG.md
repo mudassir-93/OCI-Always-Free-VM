@@ -331,3 +331,14 @@ For each future milestone, append:
 - Tests not run: local Windows checkout update, manual physical Linux workstation install, real local OCI profile diagnostics, live read-only OCI audit/capacity check, and VM launch.
 - Safety: only a documentation branch was updated. No local workstation files, OCI resources, OCI credentials, billing/IAM, EC2, or production deployment were changed. VM creation remains disabled; no OCI API calls were made.
 - Next: when the Windows PC is available, fast-forward the existing clean `main` checkout using the safe in-place procedure in `AI_HANDOFF.md`; then complete local-only `doctor` and config validation. Any live read-only OCI audit requires separate explicit approval.
+
+
+## 2026-11-23 — Main README simplified for operators
+
+- Replaced the long root README with a concise landing page covering the project purpose, Windows/Linux install, first-run local configuration, safe OCI commands, and links to detailed documentation.
+- Moved the existing detailed CLI/configuration/monitoring reference to `docs/USER_GUIDE.md` so existing operator material remains available.
+- Moved AI coding-agent onboarding to `docs/agents/README.md` and linked it from the root README.
+- Removed fixed Always Free quota figures from the guide and directs operators to verify current Oracle terms and their own tenancy limits.
+- Checked installer commands and executable paths against `install.ps1` and `install.sh`; checked relative Markdown links against the repository tree.
+- Tests: documentation/link review; GitHub Actions for this PR pending at worklog entry time.
+- Safety: documentation-only. No application code, dependencies, local workstation files, OCI resources, billing/IAM or production systems changed; no OCI API calls were made.
