@@ -26,14 +26,14 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 | PR #5 | MERGED into `main`; merge commit `29b66fbe83655692633b06d1c71157071969c1d6` |
 | PR #6 | MERGED into `main`; merge commit `8eebb755b0eb29230e21994eed202a01e9217977` |
 | PR #7 | OPEN; interactive terminal UX; https://github.com/mudassir-93/OCI-Always-Free-VM/pull/7 |
-| PR #7 head | `3dea45331efd80a970829d7583f426c7109ead06` (refresh if branch receives another commit) |
+| PR #7 head | Use the live PR metadata for the latest head SHA; documentation updates can advance it. |
 | PR #6 branch | `feat/cli-v1-installer-wizard` |
 | PR #6 merged diff | 15 files, 1,224 additions, 6 deletions |
 | Main CI after PR #6 merge | NOT VERIFIED in this handoff. The available commit-status query returned no status entries, and the workflow-run connector only exposes pull-request-triggered runs. Check the GitHub Actions UI/API before claiming post-merge CI is green. |
 | Fresh Windows/Linux workstation install | NOT YET PERFORMED |
 | Live cloud/production | No live OCI API call, VM launch, billing/IAM change, EC2 change, or production deployment was performed |
 
-The user explicitly approved the order: PR #5 first, then PR #6, with fresh CI green before each merge. PR #5 and PR #6 are now both confirmed closed and merged into `main`. PR #6 was retargeted and de-stacked before merge; its final merge commit is the current `main` HEAD.
+The user explicitly approved the order: PR #5 first, then PR #6, with fresh CI green before each merge. PR #5 and PR #6 are both confirmed closed and merged into `main`. PR #6's code merge commit is `8eebb755b0eb29230e21994eed202a01e9217977`; subsequent documentation commits advanced `main` to `9ab2d15534e8cd05e192266e591aa467b4f1cec0`.
 
 
 ## Interactive terminal UX — PR #7 (open)
@@ -45,7 +45,7 @@ The user explicitly approved the order: PR #5 first, then PR #6, with fresh CI g
 - Added validation for local OCI SDK file/profile, region shape/match, AD, VCN/subnet/image OCID prefixes, SSH public-key file, A1-only shape, supported OS and boot volume performance, whole-number resource sizing, usage and policy limits.
 - Successful configure saves always force FREE_TIER, paid resources disabled, VM creation disabled, and clear the launch phrase.
 - Adds pinned dependency questionary==2.1.1 and offline tests for editor validation, backup, cancellation, home-menu routing, and EOF behavior.
-- CI run IDs: Python checks 45096927704; CLI foundation 45096927735. At last check, Python 3.11/3.12 passed and Ubuntu 3.11/3.12 passed; Windows 3.11/3.12 were still installing dependencies. Recheck before merging.
+- Earlier CI runs for the initial PR head: Python checks 45096927704 passed on Python 3.11/3.12; CLI foundation 45096927735 passed on Ubuntu 3.11/3.12 while Windows jobs were still running. The handoff documentation then advanced PR head to 0a992ab6ace475f9b7ffd031e91882347f255871, triggering fresh runs: Python checks 45097081711 and CLI foundation 45097081571. Recheck these latest runs before merging.
 - No local workstation update has been applied yet. User's existing starter config remains at %APPDATA%\oci-platform\config.json, and VM creation was observed disabled.
 - No OCI API calls, VM launches, billing/IAM/network changes, production deployments, or main-branch changes were made for PR #7.
 ## Implemented
