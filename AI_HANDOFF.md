@@ -24,6 +24,7 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 | Item | Verified state |
 |---|---|
 | Default branch | `main` |
+| Latest main commit inspected for project status | `8c8d3ea18a2dd451c531a3f62d33cc013ce690a9` |
 | PR #8 release merge commit | `948fc148a416556f25900600c21223605e4f3066` (squash merge into `main`) |
 | PR #5 | Merged; CLI foundation |
 | PR #6 | Merged; installer and guided configuration |
@@ -67,15 +68,11 @@ PRs #5–#8 are merged. PR #8's exact head passed both required workflows before
 
 ## Validation limits and remaining work
 
-Automated CI covers compilation, offline unit tests, CLI entry points, packaging, Linux shell syntax, PowerShell parsing, and installer safety integration tests. It does not replace a real interactive session on the operator's Windows Terminal.
+The current plan, milestone-by-milestone completion, CI evidence, and ordered remaining work are maintained in [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md). The code-delivery milestones are complete; workstation and live-tenancy acceptance gates remain open.
 
-Still pending:
-1. Update the existing Windows checkout in place.
-2. Manually smoke-test arrow-key navigation, field editing, home-region auto-sync, back/cancel, review/save, and Ctrl+C.
-3. Run local `oci-platform doctor` after the operator completes local settings.
-4. Only consider a read-only live OCI audit after the user has deliberately approved that live cloud operation.
+At the last review, the existing Windows checkout had not been updated to the latest main branch, interactive Windows Terminal testing had not been performed, local OCI application configuration had not been completed/verified, and no live OCI audit or capacity run had been performed. No VM launch, account/billing change, network provisioning, or production deployment has taken place.
 
-Do not call the project fully workstation-validated until the real Windows interaction is observed. No live tenancy test or VM launch is part of this UI validation.
+Do not describe the project as end-to-end or production validated until the workstation and user-approved OCI validation steps in the project status report are completed.
 
 ## Exact next actions when the Windows PC is available
 

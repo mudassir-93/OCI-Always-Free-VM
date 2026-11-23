@@ -8,7 +8,7 @@ This checklist is for validating the CLI on a clean Windows or Linux workstation
 - Do not paste or commit OCI credentials, private keys, SSH private keys, full unredacted config files, or real OCIDs into test reports.
 - Do not run `oci-platform vm monitor --enable-create`.
 - Do not set `mode.creation_enabled=true` or add the launch confirmation phrase during smoke testing.
-- `doctor`, `config validate`, and `vm audit` may contact OCI when configured with a real profile. Use a test profile or stop before those commands if you do not explicitly intend a read-only live audit.
+- `oci-platform doctor` and `oci-platform config validate` perform local/offline checks and do not create OCI clients. `oci-platform vm audit` performs live read-only OCI API calls when given a real profile; run it only when you deliberately intend to audit that tenancy.
 - No VM launch, account upgrade, network provisioning, service installation, or production-server change is part of this checklist.
 
 ## Preconditions
@@ -153,7 +153,7 @@ Do not attach `~/.oci/config`, app config, state files, logs, key files, environ
 - GitHub Actions verifies shell/PowerShell syntax and runs the Windows installer safety integration script. Linux integration tests cover clone failure, virtual-environment failure, and existing-directory preservation.
 - GitHub Actions now executes the PowerShell installer on Windows with a temporary existing directory and a simulated Git-clone failure. This verifies preservation and cleanup behavior without contacting OCI or cloning the live repository. It is not a successful end-to-end installation from the public default branch.
 - A real fresh Linux workstation install has not been performed as part of CI.
-- The interactive wizard should receive dedicated regression tests for backup creation, clearing pre-armed creation flags, invalid VPU settings, and write-free rejection paths if those cases are not already covered by the current test suite.
+- The current suite already covers timestamped backup creation and clearing a previously armed creation flag/phrase (`tests/test_tui.py`), plus unsupported boot-volume VPUs and write-free rejection (`tests/test_cli.py`). These automated tests do not replace the manual terminal interaction checks above.
 - No live OCI audit or VM launch is required to close the local installer milestone.
 
 ## Completion criteria
