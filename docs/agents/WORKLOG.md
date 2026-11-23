@@ -210,3 +210,19 @@ For each future milestone, append:
 - The Windows and Linux fresh-workstation installs remain unperformed. Windows prerequisites are Git for Windows and Python 3.11+; installer refuses to overwrite an existing destination.
 - No local workstation commands were run. No OCI API calls, VM launch, billing/IAM changes, EC2 changes, or production deployment changes were made.
 - Next: verify post-merge Actions for `8eebb755b0eb29230e21994eed202a01e9217977`, then perform the user's Windows fresh install and validate CLI/config safety.
+
+
+## 2026-11-22 — Interactive terminal UX upgrade (in progress)
+
+- Added a Questionary-powered interactive home menu for launching the CLI without arguments in a real terminal. The menu contains local setup, configuration, doctor, redacted summary, local status/logs, help, and exit; it deliberately does not start cloud operations.
+- Added a grouped arrow-key configuration editor with field-by-field selection/editing, current-value defaults, home-region auto-sync, OCI profile selection from local profile names, validation feedback, review-before-save, cancel, and safe Ctrl+C/EOF handling.
+- Kept the line-oriented configuration flow available with configure --plain and as the no-TTY fallback for scripted sessions.
+- Added local validation for SDK config/profile presence, region format/matching, existing VCN/subnet/image identifier prefixes, SSH public-key file readability, A1-only/Ubuntu 24.04 constraints, integer resource/storage values, and configured policy caps.
+- Preserved the existing creation guard: a successful save always forces FREE_TIER, paid resources disabled, creation disabled, and clears the launch confirmation phrase; existing config backup behavior is retained.
+- Added questionary==2.1.1 as a dependency and added offline tests for validation, cancellation, backup/disarm behavior, and terminal menu routing.
+- Files: oci_platform/tui.py, oci_platform/cli.py, pyproject.toml, requirements.txt, tests/test_tui.py, tests/test_cli.py, README.md, docs/agents/PROJECT_MEMORY.md.
+- Tests run: none in this connector-only editing session; GitHub Actions validation is pending.
+- Tests not run: Windows/Linux CI, manual Windows terminal interaction, live OCI integration (not authorized and not needed for this task).
+- Safety review: no OCI calls, VM launch, billing/IAM changes, local workstation changes, or production deployment. The UI deliberately keeps cloud operations out of the no-argument home menu.
+- Known risks / limitations: interactive arrow-key behavior requires a real terminal; configure --plain is retained for piped/line-oriented use. The OCI config file must already exist before the new editor will permit a complete configuration save.
+- Next: inspect the final diff, open a PR, and require Windows/Linux Python 3.11/3.12 CI plus manual terminal smoke testing before merge.
