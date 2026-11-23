@@ -268,3 +268,13 @@ For each future milestone, append:
 - Manual Windows Terminal interaction remains NOT RUN because the operator's PC is unavailable.
 - PR #8 merge commit: `948fc148a416556f25900600c21223605e4f3066`. Post-merge push-triggered CI status was not exposed by the available commit-workflow lookup; do not claim it was verified.
 - No local workstation changes, OCI API calls, VM launches, billing/IAM changes, EC2 changes, or production deployments were performed.
+
+## 2026-11-23 — Consolidated project progress and remaining roadmap
+
+- Added `docs/PROJECT_STATUS.md` as the current project progress and delivery tracker. It records original V1 scope, completed milestones, exact CI evidence, workstation and tenancy validation gaps, the safe next-step order, and the optional guarded launch boundary.
+- Confirmed PRs #5–#8 are merged. The core CLI, installer/configuration editor, and interactive terminal UX code milestones are complete in the repository.
+- Reconfirmed PR #8 exact-head CI: Python checks run `45109638479` passed on Python 3.11/3.12; CLI foundation run `45109638472` passed on Windows/Linux × Python 3.11/3.12.
+- Explicitly separated source-code completion and automated CI from manual Windows Terminal testing, fresh Linux installation, local configuration/doctor validation, and live OCI audit/capacity testing; those operational checks remain outstanding.
+- Updated README.md, AI_HANDOFF.md, and PROJECT_MEMORY.md to link to the status tracker. Corrected the installation smoke checklist because existing tests already cover backup/disarm behavior and unsupported VPU write-free rejection.
+- Documentation-only change. No source code, dependencies, user workstation, OCI resources, billing/IAM, EC2 or production deployment changed. No live OCI calls or VM launch were performed.
+- Next: complete manual Windows checkout update and terminal smoke tests when the PC is available; then finish local-only validation, and request separate approval before any live OCI read-only audit.
