@@ -43,6 +43,24 @@ Expected:
 - Config summary masks sensitive fields and creation remains disabled.
 - Installer does not add PATH entries, install a service, or contact OCI.
 
+### Windows interactive terminal UX checks
+
+In a real PowerShell or Windows Terminal session, verify:
+
+~~~powershell
+& "$env:OCI_PLATFORM_HOME\.venv\Scripts\oci-platform.exe"
+& "$env:OCI_PLATFORM_HOME\.venv\Scripts\oci-platform.exe" configure
+~~~
+
+- Running with no arguments opens the arrow-key home menu.
+- Arrow keys, j/k, and Enter navigate the home menu and configuration sections.
+- Configure lets the operator select a category, choose one field, edit it, return to the menu, review, and cancel without saving.
+- The target region follows the tenancy home region automatically.
+- A nonexistent OCI SDK config path is rejected; profile choices show names only.
+- Ctrl+C exits the current interactive flow without a Python traceback or partial config write.
+- The no-argument menu contains local-only actions; cloud operations remain explicit commands.
+- Verify the line-oriented fallback with oci-platform configure --plain.
+
 ### Windows preservation/failure checks
 
 1. Create the target directory yourself and put a sentinel file inside it.

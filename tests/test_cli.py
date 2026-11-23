@@ -132,6 +132,25 @@ class CliSetupTests(unittest.TestCase):
             with patch.dict(os.environ, {"OCI_PLATFORM_CONFIG": str(expected)}):
                 self.assertEqual(default_config_path(), expected)
 
+
+    def test_no_argument_cli_opens_interactive_home_menu_in_a_terminal(self):
+        with patch("oci_platform.cli.sys.stdin") as stdin, patch(
+            "oci_platform.cli._run_interactive_menu", return_value=0
+        ) as menu:
+            stdin.isatty.return_value = True
+            self.assertEqual(main([]), 0)
+            menu.assert_called_once()
+
+    def test_configure_ctrl_c_or_eof_exits_without_traceback(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config_path = Path(temp) / "config.json"
+            output = io.StringIO()
+            with patch("builtins.input", side_effect=EOFError), contextlib.redirect_stderr(output):
+                result = main(["--config", str(config_path), "configure", "--plain"])
+            self.assertEqual(result, 130)
+            self.assertIn("Cancelled safely", output.getvalue())
+            self.assertFalse(config_path.exists())
+
     def test_interactive_configure_saves_free_tier_settings_creation_disabled(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -158,7 +177,7 @@ class CliSetupTests(unittest.TestCase):
             ):
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):
-                    result = main(["--config", str(config_path), "configure"])
+                    result = main(["--config", str(config_path), "configure", "--plain"])
             self.assertEqual(result, 0)
             config = read_config(config_path)
             self.assertEqual(config["account"]["home_region"], "us-phoenix-1")
@@ -175,7 +194,7 @@ class CliSetupTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             config_path = Path(temp) / "config.json"
             with patch("builtins.input", side_effect=["n"]):
-                result = main(["--config", str(config_path), "configure"])
+                result = main(["--config", str(config_path), "configure", "--plain"])
             self.assertEqual(result, 2)
             self.assertFalse(config_path.exists())
 
@@ -193,7 +212,7 @@ class CliSetupTests(unittest.TestCase):
                 return ""
 
             with patch("builtins.input", side_effect=answer):
-                result = main(["--config", str(config_path), "configure"])
+                result = main(["--config", str(config_path), "configure", "--plain"])
 
             self.assertEqual(result, 2)
             self.assertFalse(config_path.exists())
@@ -230,7 +249,7 @@ class CliSetupTests(unittest.TestCase):
             with patch("builtins.input", side_effect=answer), patch(
                 "oci_platform.cli.default_state_dir", return_value=state_dir
             ):
-                result = main(["--config", str(config_path), "configure"])
+                result = main(["--config", str(config_path), "configure", "--plain"])
 
             self.assertEqual(result, 0)
             updated = read_config(config_path)
@@ -275,7 +294,7 @@ class CliSetupTests(unittest.TestCase):
             ):
                 output = io.StringIO()
                 with contextlib.redirect_stdout(output):
-                    result = main(["--config", str(config_path), "configure"])
+                    result = main(["--config", str(config_path), "configure", "--plain"])
 
             self.assertEqual(result, 2)
             self.assertFalse(config_path.exists())

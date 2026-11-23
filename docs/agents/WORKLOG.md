@@ -210,3 +210,39 @@ For each future milestone, append:
 - The Windows and Linux fresh-workstation installs remain unperformed. Windows prerequisites are Git for Windows and Python 3.11+; installer refuses to overwrite an existing destination.
 - No local workstation commands were run. No OCI API calls, VM launch, billing/IAM changes, EC2 changes, or production deployment changes were made.
 - Next: verify post-merge Actions for `8eebb755b0eb29230e21994eed202a01e9217977`, then perform the user's Windows fresh install and validate CLI/config safety.
+
+
+## 2026-11-23 — Interactive terminal UX upgrade (in progress)
+
+- Added a Questionary-powered interactive home menu for launching the CLI without arguments in a real terminal. The menu contains local setup, configuration, doctor, redacted summary, local status/logs, help, and exit; it deliberately does not start cloud operations.
+- Added a grouped arrow-key configuration editor with field-by-field selection/editing, current-value defaults, home-region auto-sync, OCI profile selection from local profile names, validation feedback, review-before-save, cancel, and safe Ctrl+C/EOF handling.
+- Kept the line-oriented configuration flow available with configure --plain and as the no-TTY fallback for scripted sessions.
+- Added local validation for SDK config/profile presence, region format/matching, existing VCN/subnet/image identifier prefixes, SSH public-key file readability, A1-only/Ubuntu 24.04 constraints, integer resource/storage values, and configured policy caps.
+- Preserved the existing creation guard: a successful save always forces FREE_TIER, paid resources disabled, creation disabled, and clears the launch confirmation phrase; existing config backup behavior is retained.
+- Added questionary==2.1.1 as a dependency and added offline tests for validation, cancellation, backup/disarm behavior, and terminal menu routing.
+- Files: oci_platform/tui.py, oci_platform/cli.py, pyproject.toml, requirements.txt, tests/test_tui.py, tests/test_cli.py, README.md, docs/agents/PROJECT_MEMORY.md.
+- Tests run: none in this connector-only editing session; GitHub Actions validation is pending.
+- Tests not run: Windows/Linux CI, manual Windows terminal interaction, live OCI integration (not authorized and not needed for this task).
+- Safety review: no OCI calls, VM launch, billing/IAM changes, local workstation changes, or production deployment. The UI deliberately keeps cloud operations out of the no-argument home menu.
+- Known risks / limitations: interactive arrow-key behavior requires a real terminal; configure --plain is retained for piped/line-oriented use. The OCI config file must already exist before the new editor will permit a complete configuration save.
+- Next: inspect the final diff, open a PR, and require Windows/Linux Python 3.11/3.12 CI plus manual terminal smoke testing before merge.
+
+### 2026-11-23 — Windows terminal encoding fix and expanded editor tests
+
+- The first Windows Python 3.11/3.12 CI run exposed a cp1252 UnicodeEncodeError in the new terminal header because the box-drawing character was not encodable on the default Windows runner console.
+- Replaced unsupported box-drawing and arrow/prompt glyphs with ASCII-safe alternatives; retained punctuation supported by cp1252.
+- Strengthened TUI tests to explicitly encode captured save/cancel output as cp1252, preventing this regression.
+- Added interaction tests proving that changing the tenancy home region updates the target region automatically and that profile selection exposes profile names only, not credentials or private-key paths.
+- Previous-head Linux 3.11/3.12 jobs and Python checks passed; previous-head Windows jobs failed only on the encoding issue described above.
+- New CI is running on the latest PR head; do not merge until all Python checks and Windows/Linux 3.11/3.12 jobs are green.
+- No OCI API calls, VM launches, billing/IAM changes, local workstation changes, or production deployments were performed.
+
+### 2026-11-23 — PR #7 cross-platform CI passed; review-ready
+
+- The latest implementation and test commit 1ba41480d4314a789775f12826b8994489830ef1 passed both GitHub Actions workflows: Python checks run 45108231189 and CLI foundation run 45108231166.
+- Python checks passed on Python 3.11 and 3.12.
+- CLI foundation matrix passed on Windows and Ubuntu, each with Python 3.11 and 3.12. This includes editable dependency installation, compileall, PowerShell installer syntax, Windows installer safety integration tests, offline unit tests, wheel template packaging, and CLI entrypoint checks.
+- The Windows cp1252 output regression is fixed; TUI tests assert that save/cancel output can be encoded by cp1252. Region auto-sync and credential-safe profile selection have dedicated tests.
+- PR #7 remains open and unmerged pending the user's explicit merge approval. The arrow-key UX still requires a manual smoke test in the user's actual Windows Terminal/PowerShell session after the PR is merged.
+- The handoff/worklog update is documentation-only and is being committed separately; GitHub may run the workflows again for that newer PR head, so verify the latest head checks before any merge.
+- No local workstation was changed. No OCI API calls, VM launches, billing/IAM/network changes, or production deployments were performed.
