@@ -16,9 +16,12 @@ Requirements: Git and Python 3.11 or newer.
 ```powershell
 Invoke-WebRequest "https://raw.githubusercontent.com/mudassir-93/OCI-Always-Free-VM/main/install.ps1" -OutFile install.ps1
 Get-Content .\install.ps1
-# Only if PowerShell blocks the script:
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\install.ps1
+```
+
+If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` in that session and then run ` .\install.ps1` again.
+
+```powershell
 ```
 
 **Linux**
@@ -35,8 +38,17 @@ The installer creates a private virtual environment and a creation-disabled star
 
 Open the interactive menu:
 
-- **Windows:** `$HOME\oci-automation-platform\.venv\Scripts\oci-platform.exe`
-- **Linux:** `~/oci-automation-platform/.venv/bin/oci-platform`
+**Windows**
+```powershell
+$cli = "$HOME\oci-automation-platform\.venv\Scripts\oci-platform.exe"
+& $cli
+```
+
+**Linux**
+```bash
+CLI="$HOME/oci-automation-platform/.venv/bin/oci-platform"
+"$CLI"
+```
 
 Choose **Configure / Edit settings**, complete your local settings, then run **Doctor**. The configuration editor does not call OCI.
 
@@ -62,11 +74,21 @@ CLI="$HOME/oci-automation-platform/.venv/bin/oci-platform"
 
 ## Check OCI
 
-After configuring your local OCI SDK profile and existing network details:
+After configuring your local OCI SDK profile and existing network details, use the same `$cli` variable on Windows or `$CLI` on Linux from the first-run section:
 
-- `oci-platform vm audit` — live, read-only tenancy audit.
-- `oci-platform vm once` — one read-only audit and capacity check.
-- `oci-platform vm monitor` — continuous monitoring; read-only by default.
+```powershell
+& $cli vm audit
+& $cli vm once
+& $cli vm monitor
+```
+
+On Linux, use:
+
+```bash
+"$CLI" vm audit
+"$CLI" vm once
+"$CLI" vm monitor
+```
 
 A capacity report is not a reservation. Check your account plan, current OCI terms, and billing/usage in the OCI Console yourself. The tool cannot guarantee zero charges or Always Free eligibility.
 
