@@ -121,7 +121,7 @@ def _ask_number(prompt: str, default: str, *, integer: bool = False, minimum: fl
             print(f"Enter a {qualifier}.")
 
 
-def _configure_interactively(config_path: Path) -> int:
+def _configure_plain(config_path: Path) -> int:
     """Collect local settings only. Never contacts OCI or arms instance creation."""
     config = read_config(config_path) if config_path.exists() else json.loads(
         files("oci_platform").joinpath("templates", "config.example.json").read_text(encoding="utf-8")
@@ -339,6 +339,64 @@ def _configure_interactively(config_path: Path) -> int:
     return 0
 
 
+def _configure_interactively(config_path: Path) -> int:
+    """Use the arrow-key terminal editor in a real terminal; keep a plain fallback for pipes."""
+    if not sys.stdin.isatty():
+        return _configure_plain(config_path)
+    from .tui import UserCancelled, run_config_wizard
+
+    try:
+        return run_config_wizard(
+            config_path,
+            default_state_dir=default_state_dir(),
+            read_config=read_config,
+            write_config=write_config,
+        )
+    except (UserCancelled, KeyboardInterrupt, EOFError):
+        print("\nConfiguration cancelled. No changes were saved.")
+        return 130
+
+
+def _run_interactive_menu(config_path: Path) -> int:
+    """Launch a safe local-only home menu when the command is run without arguments."""
+    from .tui import UserCancelled, select_home_action
+
+    print("\nOCI Automation Platform")
+    print("A1 capacity monitor · guarded launcher · local operator tools")
+    while True:
+        try:
+            action = select_home_action()
+        except (UserCancelled, KeyboardInterrupt, EOFError):
+            print("\nExited. No cloud action was started.")
+            return 0
+
+        try:
+            if action == "Exit":
+                print("Goodbye.")
+                return 0
+            if action == "Configure / edit settings":
+                _configure_interactively(config_path)
+            elif action == "Run local diagnostics":
+                _run_doctor(config_path)
+            elif action == "Show configuration summary":
+                _show_config(config_path, read_config(config_path))
+            elif action == "Show local status":
+                _show_status(config_path)
+            elif action == "Show recent logs":
+                _show_logs(config_path, 50)
+            elif action == "Setup starter configuration":
+                created = initialize_config(config_path)
+                if created:
+                    print(f"Created creation-disabled starter configuration: {config_path}")
+                else:
+                    print(f"Existing configuration preserved: {config_path}")
+            elif action == "Show command help":
+                build_parser().print_help()
+        except (ValueError, OSError, json.JSONDecodeError) as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="oci-platform",
@@ -355,7 +413,8 @@ def build_parser() -> argparse.ArgumentParser:
     commands = parser.add_subparsers(dest="command", required=True)
 
     commands.add_parser("setup", help="Create initial user configuration without contacting OCI")
-    commands.add_parser("configure", help="Interactively configure OCI and target settings (local only)")
+    configure_cmd = commands.add_parser("configure", help="Open the interactive local configuration editor")
+    configure_cmd.add_argument("--plain", action="store_true", help="Use line-by-line prompts instead of the arrow-key editor")
     commands.add_parser("doctor", help="Check local runtime, SDK and configuration readiness")
 
     config_cmd = commands.add_parser("config", help="Inspect and validate application configuration")
@@ -497,8 +556,12 @@ def _show_logs(config_path: Path, line_count: int) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    arguments = sys.argv[1:] if argv is None else argv
+    if not arguments and sys.stdin.isatty():
+        return _run_interactive_menu(default_config_path())
+
     parser = build_parser()
-    args = parser.parse_args(argv)
+    args = parser.parse_args(arguments)
     config_path = args.config.expanduser()
 
     try:
@@ -513,7 +576,7 @@ def main(argv: list[str] | None = None) -> int:
             return 0
 
         if args.command == "configure":
-            return _configure_interactively(config_path)
+            return _configure_plain(config_path) if args.plain else _configure_interactively(config_path)
 
         if args.command == "doctor":
             return _run_doctor(config_path)
@@ -562,6 +625,9 @@ def main(argv: list[str] | None = None) -> int:
             return _show_logs(config_path, args.lines)
 
         parser.error("Unsupported command.")
+    except (KeyboardInterrupt, EOFError):
+        print("\nCancelled safely. No configuration changes were saved.", file=sys.stderr)
+        return 130
     except (ValueError, OSError, json.JSONDecodeError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 2
