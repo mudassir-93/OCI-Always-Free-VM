@@ -212,7 +212,7 @@ For each future milestone, append:
 - Next: verify post-merge Actions for `8eebb755b0eb29230e21994eed202a01e9217977`, then perform the user's Windows fresh install and validate CLI/config safety.
 
 
-## 2026-11-22 — Interactive terminal UX upgrade (in progress)
+## 2026-11-23 — Interactive terminal UX upgrade (in progress)
 
 - Added a Questionary-powered interactive home menu for launching the CLI without arguments in a real terminal. The menu contains local setup, configuration, doctor, redacted summary, local status/logs, help, and exit; it deliberately does not start cloud operations.
 - Added a grouped arrow-key configuration editor with field-by-field selection/editing, current-value defaults, home-region auto-sync, OCI profile selection from local profile names, validation feedback, review-before-save, cancel, and safe Ctrl+C/EOF handling.
@@ -226,3 +226,13 @@ For each future milestone, append:
 - Safety review: no OCI calls, VM launch, billing/IAM changes, local workstation changes, or production deployment. The UI deliberately keeps cloud operations out of the no-argument home menu.
 - Known risks / limitations: interactive arrow-key behavior requires a real terminal; configure --plain is retained for piped/line-oriented use. The OCI config file must already exist before the new editor will permit a complete configuration save.
 - Next: inspect the final diff, open a PR, and require Windows/Linux Python 3.11/3.12 CI plus manual terminal smoke testing before merge.
+
+### 2026-11-23 — Windows terminal encoding fix and expanded editor tests
+
+- The first Windows Python 3.11/3.12 CI run exposed a cp1252 UnicodeEncodeError in the new terminal header because the box-drawing character was not encodable on the default Windows runner console.
+- Replaced unsupported box-drawing and arrow/prompt glyphs with ASCII-safe alternatives; retained punctuation supported by cp1252.
+- Strengthened TUI tests to explicitly encode captured save/cancel output as cp1252, preventing this regression.
+- Added interaction tests proving that changing the tenancy home region updates the target region automatically and that profile selection exposes profile names only, not credentials or private-key paths.
+- Previous-head Linux 3.11/3.12 jobs and Python checks passed; previous-head Windows jobs failed only on the encoding issue described above.
+- New CI is running on the latest PR head; do not merge until all Python checks and Windows/Linux 3.11/3.12 jobs are green.
+- No OCI API calls, VM launches, billing/IAM changes, local workstation changes, or production deployments were performed.
