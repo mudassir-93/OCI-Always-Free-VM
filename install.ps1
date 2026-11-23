@@ -1,6 +1,15 @@
 $ErrorActionPreference = "Stop"
 
-$Repository = "https://github.com/mudassir-93/OCI-Always-Free-VM.git"
+$Repository = if ($env:OCI_PLATFORM_REPOSITORY) {
+    $env:OCI_PLATFORM_REPOSITORY
+} else {
+    "https://github.com/mudassir-93/OCI-Always-Free-VM.git"
+}
+$InstallBranch = if ($env:OCI_PLATFORM_BRANCH) {
+    $env:OCI_PLATFORM_BRANCH
+} else {
+    "main"
+}
 $InstallDir = if ($env:OCI_PLATFORM_HOME) {
     $env:OCI_PLATFORM_HOME
 } else {
@@ -57,7 +66,7 @@ try {
     New-Item -ItemType Directory -Path $InstallDir -ErrorAction Stop | Out-Null
     $InstallDirCreated = $true
 
-    git clone --depth 1 --branch main $Repository $InstallDir
+    git clone --depth 1 --branch $InstallBranch $Repository $InstallDir
     if ($LASTEXITCODE -ne 0) { throw "Git clone failed." }
 
     $VenvPath = Join-Path $InstallDir ".venv"
