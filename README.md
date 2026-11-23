@@ -73,6 +73,7 @@ The example config uses conservative policy caps. The live Limits API check is s
 ├── .env.example
 ├── .claude/commands/work.md
 ├── docs/
+│   ├── PROJECT_STATUS.md
 │   ├── DEPLOY_EC2.md
 │   └── agents/
 │       ├── PROJECT_MEMORY.md
@@ -98,6 +99,8 @@ The example config uses conservative policy caps. The live Limits API check is s
 ## Cross-platform CLI — V1 foundation
 
 The default branch includes the cross-platform `oci-platform` CLI, a local configuration editor, and safe first-install scripts for Windows and Linux. The CLI foundation, guided configuration, installer, and interactive terminal UX milestones have all been merged.
+
+See the [project progress report](docs/PROJECT_STATUS.md) for completed milestones, verified CI, remaining workstation validation, and the next steps.
 
 Install the current checkout in an isolated virtual environment:
 
