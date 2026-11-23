@@ -42,6 +42,14 @@ jobs:
         if: runner.os == 'Linux'
         run: bash -n install.sh
 
+      - name: Run fresh Linux installer integration test
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+        env:
+          OCI_PLATFORM_REPOSITORY: ${{ github.event.pull_request.head.repo.clone_url || format('{0}/{1}.git', github.server_url, github.repository) }}
+          OCI_PLATFORM_BRANCH: ${{ github.head_ref || github.ref_name }}
+          OCI_PLATFORM_EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: bash ./tests/test_install_linux.sh
+
       - name: Validate PowerShell installer syntax
         if: runner.os == 'Windows'
         shell: pwsh

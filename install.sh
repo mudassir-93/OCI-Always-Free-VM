@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-REPOSITORY="https://github.com/mudassir-93/OCI-Always-Free-VM.git"
+REPOSITORY="${OCI_PLATFORM_REPOSITORY:-https://github.com/mudassir-93/OCI-Always-Free-VM.git}"
+INSTALL_BRANCH="${OCI_PLATFORM_BRANCH:-main}"
 INSTALL_DIR="${OCI_PLATFORM_HOME:-$HOME/oci-automation-platform}"
 
 echo "OCI Automation Platform installer"
@@ -48,7 +49,7 @@ mkdir -p "$(dirname "$INSTALL_DIR")"
 mkdir "$INSTALL_DIR"
 INSTALL_DIR_CREATED=1
 
-git clone --depth 1 --branch main "$REPOSITORY" "$INSTALL_DIR"
+git clone --depth 1 --branch "$INSTALL_BRANCH" "$REPOSITORY" "$INSTALL_DIR"
 "$PYTHON" -m venv "$INSTALL_DIR/.venv"
 "$INSTALL_DIR/.venv/bin/python" -m pip install --upgrade pip
 "$INSTALL_DIR/.venv/bin/python" -m pip install -e "$INSTALL_DIR"

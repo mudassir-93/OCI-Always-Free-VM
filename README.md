@@ -69,7 +69,10 @@ The example config uses conservative policy caps. The live Limits API check is s
 ├── tests/
 │   ├── test_policy.py
 │   ├── test_cli.py
-│   └── test_tui.py
+│   ├── test_tui.py
+│   ├── test_installers.py
+│   ├── test_installers_windows.ps1
+│   └── test_install_linux.sh
 ├── SECURITY.md
 ├── .env.example
 ├── .claude/commands/work.md
@@ -196,7 +199,7 @@ less install.sh
 bash install.sh
 ~~~
 
-Requirements: Git and Python 3.11 or newer. The default install directory is ~/oci-automation-platform (Windows: your home directory). To select a different new directory, set OCI_PLATFORM_HOME before running the installer. The installer refuses to overwrite an existing directory; it is not an updater and does not silently pull changes over local work.
+Requirements: Git and Python 3.11 or newer. The default install directory is ~/oci-automation-platform (Windows: your home directory). To select a different new directory, set OCI_PLATFORM_HOME before running the installer. The installer refuses to overwrite an existing directory; it is not an updater and does not silently pull changes over local work. For a trusted fork or a deliberate branch test, optionally set OCI_PLATFORM_REPOSITORY to its Git clone URL and OCI_PLATFORM_BRANCH to the branch name; both installers default to this project's public repository and `main` when these variables are unset.
 
 For a safe manual validation sequence on clean Windows and Linux machines, including existing-directory protection and known test-coverage limits, see [the installation smoke-test checklist](docs/testing/INSTALLATION_SMOKE_TEST.md).
 
