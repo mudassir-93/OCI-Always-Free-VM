@@ -3,9 +3,25 @@
 [![Python checks](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/tests.yml)
 [![Windows & Linux CLI](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/cli-foundation.yml/badge.svg?branch=main)](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/cli-foundation.yml)
 
+![Illustration: moving from uncertain cloud capacity to a simple terminal-based OCI workflow](docs/assets/oci-a1-workflow-cover.jpg)
+
 A small Python CLI for checking Oracle Cloud Infrastructure (OCI) Ampere A1 availability and optionally requesting one VM after explicit approval and safety checks. Works on Windows and Linux.
 
 **Safe by default:** installation and configuration are local-only. Audits and monitoring are read-only unless the separate VM-creation safeguards are deliberately enabled. Capacity and Always Free eligibility are never guaranteed.
+
+## How the workflow fits together
+
+The normal path stays local until you explicitly run an OCI check. Monitoring remains read-only; requesting a VM is a separate, guarded action.
+
+```mermaid
+flowchart TD
+    A["Install and configure<br/>(local only)"] --> B["Doctor and config validation"]
+    B --> C["OCI audit<br/>(read-only)"]
+    C --> D["A1 capacity checks and monitoring<br/>(read-only)"]
+    D --> E{"Explicit approval<br/>and all 3 launch safeguards?"}
+    E -- "No" --> F["Continue in read-only mode"]
+    E -- "Yes" --> G["Request one A1 instance"]
+```
 
 ## Install
 
