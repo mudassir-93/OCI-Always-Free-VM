@@ -557,8 +557,11 @@ def _show_logs(config_path: Path, line_count: int) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     arguments = sys.argv[1:] if argv is None else argv
-    if not arguments and sys.stdin.isatty():
-        return _run_interactive_menu(default_config_path())
+    if not arguments:
+        if sys.stdin.isatty():
+            return _run_interactive_menu(default_config_path())
+        build_parser().print_help()
+        return 0
 
     parser = build_parser()
     args = parser.parse_args(arguments)
