@@ -75,6 +75,8 @@ The example config uses conservative policy caps. The live Limits API check is s
 ├── docs/
 │   ├── PROJECT_STATUS.md
 │   ├── DEPLOY_EC2.md
+│   ├── testing/
+│   │   └── INSTALLATION_SMOKE_TEST.md
 │   └── agents/
 │       ├── PROJECT_MEMORY.md
 │       ├── START_PROMPT.md
