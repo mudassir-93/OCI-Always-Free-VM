@@ -146,7 +146,7 @@ The first implementation milestone is merged into `main` via PR #5. The currentl
 - No live OCI operations or production deployments were performed.
 
 
-## Interactive terminal UX milestone (in progress)
+## Interactive terminal UX milestone (merged into main via PR #7)
 
 - Added Questionary-powered arrow-key menus for an interactive home screen when oci-platform is run without arguments in a real terminal.
 - Added grouped field-by-field configuration editing for OCI profile, home region, availability domain, existing VCN/subnet, A1 sizing/storage, policy budgets, usage attestations, SSH public key, pinned Ubuntu image, retry settings, local paths, and logging.
@@ -155,4 +155,4 @@ The first implementation milestone is merged into `main` via PR #5. The currentl
 - The home menu only offers local actions; cloud audit/monitor operations remain explicit subcommands. No live OCI APIs are called by the terminal editor.
 - Every successful wizard save reasserts account_type=FREE_TIER, allow_paid_resources=false, mode.creation_enabled=false, and an empty creation confirmation phrase.
 - Questionary is pinned as a small pure-Python UI dependency; the OCI SDK and engine remain unchanged.
-- PR #7 is open. Implementation/test commit 1ba41480d4314a789775f12826b8994489830ef1 passed the Python checks and full Windows/Linux Python 3.11/3.12 matrix. A Windows cp1252 output issue was fixed; tests assert cp1252 compatibility, home-region auto-sync, and credential-safe profile selection. Documentation-only follow-up may create newer CI runs; verify the latest PR head before merging. Manual Windows Terminal interaction remains a separate smoke-test requirement. Merge approval is still required.
+- PR #7 was squash-merged as 605a01ae92d57920ee116539aa8ed53eae976503. The exact merged main commit passed Python checks 45108762748 (3.11/3.12) and CLI foundation 45108762718 (Windows/Linux × 3.11/3.12). The Windows cp1252 output issue was fixed; tests assert cp1252 compatibility, home-region auto-sync, and credential-safe profile selection. Manual Windows Terminal interaction remains a separate smoke-test requirement.

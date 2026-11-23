@@ -22,21 +22,20 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 
 | Item | Current state |
 |---|---|
-| `main` | `9ab2d15534e8cd05e192266e591aa467b4f1cec0` |
+| `main` code merge | PR #7 merge commit `605a01ae92d57920ee116539aa8ed53eae976503` (a documentation-only handoff update may advance the branch) |
 | PR #5 | MERGED into `main`; merge commit `29b66fbe83655692633b06d1c71157071969c1d6` |
 | PR #6 | MERGED into `main`; merge commit `8eebb755b0eb29230e21994eed202a01e9217977` |
-| PR #7 | OPEN; interactive terminal UX; https://github.com/mudassir-93/OCI-Always-Free-VM/pull/7 |
-| PR #7 head | Use the live PR metadata for the latest head SHA; documentation updates can advance it. |
+| PR #7 | MERGED into `main`; https://github.com/mudassir-93/OCI-Always-Free-VM/pull/7 |
 | PR #6 branch | `feat/cli-v1-installer-wizard` |
 | PR #6 merged diff | 15 files, 1,224 additions, 6 deletions |
-| Main CI after PR #6 merge | NOT VERIFIED in this handoff. The available commit-status query returned no status entries, and the workflow-run connector only exposes pull-request-triggered runs. Check the GitHub Actions UI/API before claiming post-merge CI is green. |
+| PR #7 post-merge main CI | PASS on merge commit `605a01ae92d57920ee116539aa8ed53eae976503`: Python checks run 45108762748 and CLI foundation run 45108762718; all Windows/Linux Python 3.11/3.12 jobs succeeded. |
 | Fresh Windows/Linux workstation install | NOT YET PERFORMED |
 | Live cloud/production | No live OCI API call, VM launch, billing/IAM change, EC2 change, or production deployment was performed |
 
-The user explicitly approved the order: PR #5 first, then PR #6, with fresh CI green before each merge. PR #5 and PR #6 are both confirmed closed and merged into `main`. PR #6's code merge commit is `8eebb755b0eb29230e21994eed202a01e9217977`; subsequent documentation commits advanced `main` to `9ab2d15534e8cd05e192266e591aa467b4f1cec0`.
+The user explicitly approved the order: PR #5 then PR #6, followed by the interactive CLI UX implementation. PR #5, PR #6, and PR #7 are all closed and merged into `main`. PR #7 merge commit: `605a01ae92d57920ee116539aa8ed53eae976503`. Both required post-merge workflows passed on this exact code merge commit.
 
 
-## Interactive terminal UX — PR #7 (open)
+## Interactive terminal UX — PR #7 (merged into main)
 
 - Branch: feat/interactive-cli-ux.
 - Added a Questionary arrow-key home menu for no-argument interactive terminal use; menu actions are local-only and do not initiate OCI operations.
@@ -81,37 +80,26 @@ The user explicitly approved the order: PR #5 first, then PR #6, with fresh CI g
 
 ## Exact next actions
 
-1. Verify GitHub Actions for current `main` commit `8eebb755b0eb29230e21994eed202a01e9217977`; inspect both the CLI foundation matrix and Python checks workflow. Report each job separately.
-2. Run the fresh Windows installer on the user's workstation using the commands below; observe actual output before claiming success.
-3. If Windows installation succeeds, run `oci-platform --version`, `oci-platform doctor`, and inspect the generated configuration summary. Keep creation disabled.
-4. Keep fresh Linux workstation installation as a separate manual validation gate if the user has a Linux machine available.
-5. Do not run OCI audit or launch a VM unless the user separately authorizes the live cloud action.
-
-Windows first-install command (PowerShell):
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-$env:OCI_PLATFORM_HOME = Join-Path $HOME "oci-platform"
-irm https://raw.githubusercontent.com/mudassir-93/OCI-Always-Free-VM/main/install.ps1 | iex
-```
-
-Prerequisites: Git for Windows and Python 3.11 or newer. The chosen install directory must not already exist. If it does, stop and choose a different `OCI_PLATFORM_HOME`; do not delete or overwrite existing files.
-
-## Exact next actions
-
-1. Recheck PR #7 Windows 3.11 and Python 3.12 GitHub Actions jobs for run 45096927735; Linux 3.11/3.12 and Python checks have passed at the last check.
-2. Review the full PR diff and CI outcome. Do not merge PR #7 without the user's explicit approval.
-3. After explicit merge approval, successful latest-head checks, and main-branch CI verification, update the existing Windows clone in place (do not rerun the installer because it refuses existing directories):
+1. Update the existing Windows clone in place. Do not rerun install.ps1 because the installer intentionally refuses an existing directory.
+2. In PowerShell, first check for local source edits:
 
    ```powershell
    Set-Location "$HOME\oci-automation-platform"
-   git pull --ff-only origin main
-   .\.venv\Scripts\python.exe -m pip install -e .
-   .\.venv\Scripts\oci-platform.exe
+   git status --short
    ```
 
-4. Run the interactive configuration editor from the new home menu or with oci-platform configure; no cloud audit/launch is part of UI validation. Keep creation disabled.
-5. Manually smoke-test arrow keys, field editing, region auto-sync, back/cancel, review/save, and Ctrl+C in Windows Terminal/PowerShell before marking UX milestone complete.
+   If this prints any files, stop and review them before pulling. If it prints nothing, continue:
+
+   ```powershell
+   git pull --ff-only origin main
+   .\.venv\Scripts\python.exe -m pip install -e .
+   & .\.venv\Scripts\oci-platform.exe --version
+   & .\.venv\Scripts\oci-platform.exe
+   ```
+
+3. The last command opens the new arrow-key home menu. Select Configure / edit settings to start the local editor. Your existing app configuration remains at %APPDATA%\oci-platform\config.json; do not delete or recreate it.
+4. The OCI SDK config file must exist locally before the editor can validate a complete configuration. Enter the path to that file in the UI; do not paste credentials or private keys into chat.
+5. Manually smoke-test arrow keys, selecting/editing a single field, home-region auto-sync, back/cancel, review/save, and Ctrl+C. Keep VM creation disabled. Do not run a live OCI audit or launch during the UI smoke test.
 
 ## Session closeout
 

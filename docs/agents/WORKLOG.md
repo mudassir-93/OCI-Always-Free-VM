@@ -246,3 +246,14 @@ For each future milestone, append:
 - PR #7 remains open and unmerged pending the user's explicit merge approval. The arrow-key UX still requires a manual smoke test in the user's actual Windows Terminal/PowerShell session after the PR is merged.
 - The handoff/worklog update is documentation-only and is being committed separately; GitHub may run the workflows again for that newer PR head, so verify the latest head checks before any merge.
 - No local workstation was changed. No OCI API calls, VM launches, billing/IAM/network changes, or production deployments were performed.
+
+### 2026-11-23 — PR #7 merged; main CI passed
+
+- User approved proceeding with the CLI UX upgrade; PR #7 was squash-merged after the exact PR head passed both GitHub Actions workflows.
+- PR #7 merge commit: 605a01ae92d57920ee116539aa8ed53eae976503.
+- Main-branch post-merge workflows also passed on the exact merge commit: Python checks run 45108762748 (Python 3.11/3.12) and CLI foundation run 45108762718 (Windows/Ubuntu × Python 3.11/3.12).
+- The CLI provides the arrow-key home menu, grouped configuration editor, field selection/editing, home-region auto-sync, OCI profile-name selection, local validation, review-before-save, timestamped backups, and clean cancel behavior.
+- The Windows cp1252 terminal encoding regression was fixed and covered by tests. All four Windows/Linux × Python 3.11/3.12 CI jobs passed after the fix.
+- The user's existing Windows installation has not yet been updated. The known checkout is %USERPROFILE%\oci-automation-platform, with the application config stored separately under %APPDATA%\oci-platform\config.json. Preserve that config; update the existing checkout in place, not by rerunning the installer.
+- Manual Windows Terminal interaction remains pending: test the home menu, field editing, region auto-sync, back/cancel, review/save, and Ctrl+C. Keep creation disabled.
+- No OCI API calls, VM launches, billing/IAM/network changes, local workstation modifications, or production deployments were performed.
