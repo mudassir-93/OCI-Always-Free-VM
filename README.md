@@ -97,7 +97,7 @@ The example config uses conservative policy caps. The live Limits API check is s
 
 ## Cross-platform CLI — V1 foundation
 
-The repository now includes the cross-platform `oci-platform` CLI foundation, a local configuration wizard, and safe first-install scripts for Windows and Linux. These changes are being developed in separate reviewable milestones; the installers become available from the default branch only after the corresponding pull requests are merged.
+The default branch includes the cross-platform `oci-platform` CLI, a local configuration editor, and safe first-install scripts for Windows and Linux. The CLI foundation, guided configuration, installer, and interactive terminal UX milestones have all been merged.
 
 Install the current checkout in an isolated virtual environment:
 
