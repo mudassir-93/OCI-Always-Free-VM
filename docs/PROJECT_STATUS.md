@@ -3,13 +3,13 @@
 **Status checked:** 2026-11-23  
 **Repository:** [mudassir-93/OCI-Always-Free-VM](https://github.com/mudassir-93/OCI-Always-Free-VM)  
 **Default branch at review:** `main`  
-**Latest main commit inspected:** `e60bbc76854b5a712f72a5c63ff6a1e5ee1f884b`
+**Latest main commit inspected:** `7c5e583fe2103f8b39aee82de54dfdde2f35aa6d`
 
 ## Executive summary
 
 The agreed V1 repository implementation is complete: the existing A1 automation engine is wrapped in a cross-platform CLI, installers and guided configuration are merged, the arrow-key terminal interface is merged, and the project handoff documentation is current.
 
-**The code-delivery phase is complete; end-to-end operator validation is still in progress.** On 2026-11-23, the operator reported that a fresh Windows installation and CLI/interactive terminal smoke test worked on a second PC. The original Windows checkout has not yet been confirmed updated. Fresh Linux workstation installation, separate existing-directory protection verification, local operator diagnostics, and all live OCI validation remain outstanding. No VM launch has been performed.
+**The code-delivery phase is complete; end-to-end operator validation is still in progress.** On 2026-11-23, the operator reported that a fresh Windows installation and CLI/interactive terminal smoke test worked on a second PC. PR #12 also added a successful end-to-end fresh Linux install to the Ubuntu CI matrix, including creation-disabled config, exact-commit verification, existing-directory preservation, and failed-clone cleanup. A separate manual Linux workstation install has not been reported. The original Windows checkout update, real local OCI profile diagnostics, and all live OCI validation remain outstanding. No VM launch has been performed.
 
 | Workstream | Progress | Evidence / limitation |
 |---|---|---|
@@ -22,10 +22,14 @@ The agreed V1 repository implementation is complete: the existing A1 automation 
 | Progress tracker and roadmap — PR #9 | Merged | Added the consolidated status report, handoff links, and clarified offline versus live validation boundaries. |
 | Handoff synchronization — PR #10 | Merged | Synchronized the status tracker and AI handoff to PR #9, recorded its CI evidence, and corrected the README test-file tree. |
 | Automated CI for PR #10 | 6/6 jobs passed | Exact PR head `e6d39d94067a7261d893df5cc5a0b4d19288eb26`: Python checks run `45113875820` and CLI foundation run `45113875739`; Windows/Linux × Python 3.11/3.12 all passed before squash merge. |
+| Windows fresh-PC validation record — PR #11 | Merged | Recorded the operator-reported successful fresh Windows installation and CLI/TUI smoke test on a second PC. |
+| Automated CI for PR #11 | 6/6 jobs passed | Exact PR head `23a2528f93b232a68b7602922ebb724a19d1cc1d`: Python checks run `45116410721` and CLI foundation run `45116410713`; Windows/Linux × Python 3.11/3.12 all passed before squash merge. |
+| Linux clean-install integration — PR #12 | Passed in CI | Ubuntu/Python 3.12 installed the exact PR commit in a fresh temporary directory as a non-root user; CLI, redacted config, disabled creation, existing-directory preservation, and failed-clone cleanup all passed. |
+| Automated CI for PR #12 | 6/6 jobs passed | Exact PR head `8a3f0436b3a6988dcae5d4f620645a5596baa5bd`: Python checks run `45117728501` and CLI foundation run `45117728426`; Windows/Linux × Python 3.11/3.12 all passed before squash merge. |
 | Automated CI for PR #9 | 6/6 jobs passed | Exact PR head `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a`: Python checks run `45110780545` (3.11/3.12) and CLI foundation run `45110780528` (Windows/Linux × 3.11/3.12) all passed before squash merge. |
 | Fresh Windows PC installation and CLI/TUI smoke test | Passed — operator-reported | On 2026-11-23, the operator confirmed the fresh download/install and the described version/help/config-summary, home-menu, and configuration-editor checks worked on a second PC. Exact OS/Python versions and captured output were not supplied; this is not an independently observed test run. |
 | Existing Windows checkout update | Pending | This second-PC fresh install does not confirm that the original `$HOME\oci-automation-platform` checkout has been updated in place. |
-| Manual workstation validation | Partially complete | Windows fresh install and interactive smoke test are reported passed. Fresh Linux installation and a separate existing-directory sentinel test remain unconfirmed. |
+| Manual workstation validation | Partially complete | Fresh Windows install/TUI test is operator-reported passed. Separate Linux workstation install and original Windows checkout update remain pending. Existing-directory preservation is now covered by both Windows and Linux CI integration tests. |
 | Real OCI tenancy validation | Not started | No live read-only OCI audit or capacity check has been performed. |
 | Actual A1 VM launch | Not performed; optional | Creation remains disabled by default. A launch is not required for local CLI validation and must not be attempted without separate explicit approval. |
 
@@ -54,6 +58,8 @@ The agreed V1 scope is intentionally narrow:
 | Release documentation and AI handoff cleanup | [PR #8](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/8) | **MERGED** |
 | Consolidated progress tracker and roadmap | [PR #9](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/9) | **MERGED** |
 | Handoff and release-state synchronization | [PR #10](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/10) | **MERGED** |
+| Operator-reported Windows validation record | [PR #11](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/11) | **MERGED** |
+| Fresh Linux installer integration and source branch override | [PR #12](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/12) | **MERGED** |
 
 ### What the delivered CLI contains
 
@@ -84,9 +90,23 @@ The exact PR #10 head `e6d39d94067a7261d893df5cc5a0b4d19288eb26` passed all six 
 - **Python checks:** run `45113875820`, Python 3.11 and 3.12.
 - **CLI foundation:** run `45113875739`, Ubuntu and Windows with Python 3.11 and 3.12 (four matrix jobs).
 
-PR #10 was squash-merged as main commit `e60bbc76854b5a712f72a5c63ff6a1e5ee1f884b`. The available commit lookup did not expose a separate post-merge push-triggered run for that merge commit; do not claim one was verified.
+PR #10 was squash-merged as main commit `e60bbc76854b5a712f72a5c63ff6a1e5ee1f884b`.
 
-The Windows jobs include PowerShell installer parsing, Windows installer preservation/failure integration tests, offline tests, packaging and CLI entry-point checks. Ubuntu jobs include compilation, shell syntax, offline tests, packaging and CLI entry-point checks.
+The exact PR #11 head `23a2528f93b232a68b7602922ebb724a19d1cc1d` passed all six jobs before squash merge:
+
+- **Python checks:** run `45116410721`, Python 3.11 and 3.12.
+- **CLI foundation:** run `45116410713`, Ubuntu and Windows with Python 3.11 and 3.12 (four matrix jobs).
+
+PR #11 was squash-merged as main commit `6c57040b458cc30c98e3920c5f572f10dc8ab8af`.
+
+The exact PR #12 head `8a3f0436b3a6988dcae5d4f620645a5596baa5bd` passed all six jobs before squash merge:
+
+- **Python checks:** run `45117728501`, Python 3.11 and 3.12.
+- **CLI foundation:** run `45117728426`, Ubuntu and Windows with Python 3.11 and 3.12 (four matrix jobs). The Ubuntu/Python 3.12 job ran the new fresh Linux installer integration step successfully, including exact-commit, starter-config, CLI, sentinel preservation, and failed-clone cleanup assertions.
+
+PR #12 was squash-merged as main commit `7c5e583fe2103f8b39aee82de54dfdde2f35aa6d`. The available commit-run lookup did not expose a separate post-merge push-triggered run for that merge commit; do not claim one was verified.
+
+The Windows jobs include PowerShell installer parsing, Windows installer preservation/failure integration tests, offline tests, packaging and CLI entry-point checks. Ubuntu jobs include compilation, shell syntax, offline tests, packaging and CLI entry-point checks; the Ubuntu/Python 3.12 job also runs a real fresh installation of the exact PR branch as a non-root user.
 
 These are CI results for the exact PR head before the documentation-only squash merge. Later main-branch edits after that merge were documentation-only; a surfaced post-merge push-workflow result for the latest main commit was not available during this review. Do not describe the latest main commit itself as having a separately verified post-merge run.
 
@@ -158,13 +178,13 @@ No launch, account upgrade, network change or existing-instance modification has
 
 - GitHub Actions is not a substitute for a real interactive session in Windows Terminal. A second-PC Windows fresh install and interactive smoke test were reported passed by the operator on 2026-11-23; no screenshots/logs or OS/Python version details were collected.
 - The Windows installer integration test verifies existing-directory preservation and cleanup after a simulated Git clone failure; it is not a successful fresh installation from the public repository.
-- Linux CI covers installation failure cleanup and existing-directory preservation; a fresh Linux workstation installation remains unobserved.
+- Linux CI now performs a real fresh install from the exact PR branch using the public installer, then validates CLI startup, safe starter config, exact commit, existing-directory protection, and failed-clone cleanup. This is a hosted Ubuntu CI run, not a manual install on a separate physical Linux workstation.
 - Unit tests use local fixtures/mocks; they cannot establish the state of the user's live OCI tenancy, billing plan, IAM visibility, image eligibility or available A1 capacity.
 - Free Tier status and the Console's “Always Free Eligible” image label remain operator attestations where the SDK cannot reliably verify them.
 
 ## Definition of completion
 
-The V1 **code delivery** milestone is complete. Call the initial operator rollout validated only after the existing Windows checkout is updated, the TUI smoke test passes, local diagnostics pass, and the user-approved read-only OCI audit and one-shot capacity check are reviewed. A real VM launch is optional and remains separately guarded.
+The V1 **code delivery** milestone is complete. Call the initial operator rollout validated only after the original Windows checkout is updated, local diagnostics pass, and the user-approved read-only OCI audit and one-shot capacity check are reviewed. The second-PC Windows TUI test is operator-reported passed, and the Linux installer now has end-to-end hosted CI coverage; a separate physical Linux workstation test remains an additional manual acceptance step when Linux is an intended operator platform. A real VM launch is optional and remains separately guarded.
 
 ## Safety and environment closeout
 
