@@ -38,7 +38,9 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 | PR #11 | Merged; recorded operator-reported second-PC Windows fresh install/TUI pass |
 | PR #11 merge commit | `6c57040b458cc30c98e3920c5f572f10dc8ab8af` |
 | PR #12 | Merged; added clean Linux installer integration CI and source/branch overrides |
-| PR #12 merge commit | `7c5e583fe2103f8b39aee82de54dfdde2f35aa6d` |\n| PR #13 | Merged; synchronized validation and handoff records after PR #11/#12 |\n| PR #13 merge commit / main baseline | `3307f8f44b94c888bdd8f0b76b3746eed19f5dba` |
+| PR #12 merge commit | `7c5e583fe2103f8b39aee82de54dfdde2f35aa6d` |
+| PR #13 | Merged; synchronized validation and handoff records after PR #11/#12 |
+| PR #13 merge commit / main baseline | `3307f8f44b94c888bdd8f0b76b3746eed19f5dba` |
 | PR #7 merge commit | `605a01ae92d57920ee116539aa8ed53eae976503` |
 | CI on PR #7 merge commit | Python checks run `45108762748` passed on Python 3.11/3.12; CLI foundation run `45108762718` passed on Windows and Ubuntu with Python 3.11/3.12 |
 | CI on latest verified main HEAD before PR #8 | Python checks run `45109001375` passed on Python 3.11/3.12; CLI foundation run `45109001365` passed on Windows/Ubuntu × Python 3.11/3.12 |
@@ -46,11 +48,14 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 | CI on PR #9 exact head `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a` | Python checks run `45110780545` passed on Python 3.11/3.12; CLI foundation run `45110780528` passed on Windows/Linux × Python 3.11/3.12 (6/6 jobs total) |
 | CI on PR #10 exact head `e6d39d94067a7261d893df5cc5a0b4d19288eb26` | Python checks run `45113875820` passed on Python 3.11/3.12; CLI foundation run `45113875739` passed on Windows/Linux × Python 3.11/3.12 (6/6 jobs total) |
 | CI on PR #11 exact head `23a2528f93b232a68b7602922ebb724a19d1cc1d` | Python checks run `45116410721` passed on Python 3.11/3.12; CLI foundation run `45116410713` passed on Windows/Linux × Python 3.11/3.12 (6/6 jobs total) |
-| CI on PR #12 exact head `8a3f0436b3a6988dcae5d4f620645a5596baa5bd` | Python checks run `45117728501` passed on Python 3.11/3.12; CLI foundation run `45117728426` passed on Windows/Linux × Python 3.11/3.12 (6/6 jobs total). Ubuntu/Python 3.12 additionally passed the full fresh Linux installer integration test. |\n| CI on PR #13 exact head `83e193d07b435a323b9d7771b0e5539af4893022` | Python checks run `45118315425` and CLI foundation run `45118315427` passed (6/6 jobs total). |\n| Push CI on PR #13 merge commit `3307f8f44b94c888bdd8f0b76b3746eed19f5dba` | Python checks run `45118630570` and CLI foundation run `45118630579` both passed (6/6 jobs total). |
+| CI on PR #12 exact head `8a3f0436b3a6988dcae5d4f620645a5596baa5bd` | Python checks run `45117728501` passed on Python 3.11/3.12; CLI foundation run `45117728426` passed on Windows/Linux × Python 3.11/3.12 (6/6 jobs total). Ubuntu/Python 3.12 additionally passed the full fresh Linux installer integration test. |
+| CI on PR #13 exact head `83e193d07b435a323b9d7771b0e5539af4893022` | Python checks run `45118315425` and CLI foundation run `45118315427` passed (6/6 jobs total). |
+| Push CI on PR #13 merge commit `3307f8f44b94c888bdd8f0b76b3746eed19f5dba` | Python checks run `45118630570` and CLI foundation run `45118630579` both passed (6/6 jobs total). |
 | Fresh Windows PC install and interactive smoke test | Operator reported success on a second PC on 2026-11-23; exact OS/Python versions and test output were not captured |
 | Fresh Linux installer integration | Passed on hosted Ubuntu/Python 3.12 CI for exact PR #12 head; manual physical Linux workstation test remains pending |
 | Original Windows checkout update | Still pending; do not confuse the second-PC fresh install with updating the original checkout |
-| Live OCI / production work | Not performed |\n| Open pull requests / issues | None found on 2026-11-23 |
+| Live OCI / production work | Not performed |
+| Open pull requests / issues | None found on 2026-11-23 |
 
 PRs #5–#13 are merged. PR #8–#13 exact heads each passed the required CI before merge. PR #12 added and passed a hosted Ubuntu/Python 3.12 fresh-install integration test from the exact PR branch. PR #13 was documentation-only and merged as `3307f8f44b94c888bdd8f0b76b3746eed19f5dba`; both push-triggered main workflows then passed on that commit (6/6 jobs). No open PRs or issues were found on 2026-11-23.
 
