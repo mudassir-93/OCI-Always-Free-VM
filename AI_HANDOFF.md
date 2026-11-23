@@ -24,21 +24,24 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 | Item | Verified state |
 |---|---|
 | Default branch | `main` |
-| Latest main commit inspected for project status | `8c8d3ea18a2dd451c531a3f62d33cc013ce690a9` |
+| Latest main commit inspected for project status | `fb46199e16739f30edd5045b7a4282b275cc3bfb` |
 | PR #8 release merge commit | `948fc148a416556f25900600c21223605e4f3066` (squash merge into `main`) |
 | PR #5 | Merged; CLI foundation |
 | PR #6 | Merged; installer and guided configuration |
 | PR #7 | Merged; interactive terminal home menu and grouped editor |
 | PR #8 | Merged; README release status and consolidated AI handoff |
 | PR #8 merge commit | `948fc148a416556f25900600c21223605e4f3066` |
+| PR #9 | Merged; consolidated project progress tracker and roadmap |
+| PR #9 merge commit | `fb46199e16739f30edd5045b7a4282b275cc3bfb` |
 | PR #7 merge commit | `605a01ae92d57920ee116539aa8ed53eae976503` |
 | CI on PR #7 merge commit | Python checks run `45108762748` passed on Python 3.11/3.12; CLI foundation run `45108762718` passed on Windows and Ubuntu with Python 3.11/3.12 |
 | CI on latest verified main HEAD before PR #8 | Python checks run `45109001375` passed on Python 3.11/3.12; CLI foundation run `45109001365` passed on Windows/Ubuntu × Python 3.11/3.12 |
 | CI on PR #8 exact head `dfe10f57ffb6adae34b996ae3d65b1f094b9f8ca` | Python checks run `45109638479` passed on Python 3.11/3.12; CLI foundation run `45109638472` passed on Windows/Linux × Python 3.11/3.12 |
+| CI on PR #9 exact head `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a` | Python checks run `45110780545` passed on Python 3.11/3.12; CLI foundation run `45110780528` passed on Windows/Linux × Python 3.11/3.12 (6/6 jobs total) |
 | Local Windows update and interactive smoke test | Pending; the operator's PC is not currently available |
 | Live OCI / production work | Not performed |
 
-PRs #5–#8 are merged. PR #8's exact head passed both required workflows before squash merge. The GitHub status lookup used here does not expose the push-triggered post-merge workflow runs, so do not infer post-merge CI from an empty status response; verify the Actions page if that distinction is required.
+PRs #5–#9 are merged. PR #8 and PR #9 exact heads passed both required workflows before their squash merges. For PR #9, the exact pre-merge CI head was `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a`; the available combined-status and PR-run lookup did not expose a separate post-merge push-triggered run for merge commit `fb46199e16739f30edd5045b7a4282b275cc3bfb`, so do not describe post-merge CI as verified.
 
 ## Implemented product
 
