@@ -24,7 +24,7 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 | Item | Verified state |
 |---|---|
 | Default branch | `main` |
-| Latest verified main HEAD | `948fc148a416556f25900600c21223605e4f3066` (PR #8 squash merge) |
+| PR #8 release merge commit | `948fc148a416556f25900600c21223605e4f3066` (squash merge into `main`) |
 | PR #5 | Merged; CLI foundation |
 | PR #6 | Merged; installer and guided configuration |
 | PR #7 | Merged; interactive terminal home menu and grouped editor |
