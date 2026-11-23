@@ -318,3 +318,16 @@ For each future milestone, append:
 - A separate attempt to run the installer in an isolated Debian 13 container could not resolve `raw.githubusercontent.com` because the container environment had no DNS access; no local manual Linux pass is claimed. The hosted GitHub Actions Ubuntu integration test completed successfully.
 - No OCI credentials/profile were configured, no live OCI API calls or VM launches were performed, and no workstation, billing/IAM, EC2 or production resources were changed.
 - Remaining: update the original Windows checkout when available; validate the real local OCI profile and diagnostics; request separate explicit approval before any live read-only OCI audit/capacity run. Manual Linux workstation install remains an optional additional operator acceptance check; automated hosted Linux installer coverage is now present.
+
+
+## 2026-11-23 — PR #13 and latest main CI verified; handoff synchronized
+
+- Rechecked the repository default branch and confirmed PR #13 merge commit / main baseline `3307f8f44b94c888bdd8f0b76b3746eed19f5dba`.
+- Confirmed PR #13 exact-head workflows passed: Python checks run `45118315425` and CLI foundation run `45118315427` (6/6 jobs across Python 3.11/3.12 and Windows/Linux).
+- Confirmed both push-triggered workflows on the PR #13 merge commit passed: Python checks run `45118630570` and CLI foundation run `45118630579` (6/6 jobs).
+- Re-synchronized `docs/PROJECT_STATUS.md`, `AI_HANDOFF.md`, and `docs/agents/PROJECT_MEMORY.md` with PR #13 and current main CI evidence; checked for open PRs and issues (none found).
+- Reviewed the installer scripts, CI workflows, CLI setup/configuration flow, static Free Tier policy checks, and existing policy tests. No new actionable defect was identified in the inspected paths; this was a focused review, not a full security audit or live tenancy test.
+- Tests run: repository main push CI passed 6/6 jobs; PR #13 exact-head CI passed 6/6 jobs.
+- Tests not run: local Windows checkout update, manual physical Linux workstation install, real local OCI profile diagnostics, live read-only OCI audit/capacity check, and VM launch.
+- Safety: only a documentation branch was updated. No local workstation files, OCI resources, OCI credentials, billing/IAM, EC2, or production deployment were changed. VM creation remains disabled; no OCI API calls were made.
+- Next: when the Windows PC is available, fast-forward the existing clean `main` checkout using the safe in-place procedure in `AI_HANDOFF.md`; then complete local-only `doctor` and config validation. Any live read-only OCI audit requires separate explicit approval.
