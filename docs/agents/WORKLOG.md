@@ -236,3 +236,13 @@ For each future milestone, append:
 - Previous-head Linux 3.11/3.12 jobs and Python checks passed; previous-head Windows jobs failed only on the encoding issue described above.
 - New CI is running on the latest PR head; do not merge until all Python checks and Windows/Linux 3.11/3.12 jobs are green.
 - No OCI API calls, VM launches, billing/IAM changes, local workstation changes, or production deployments were performed.
+
+### 2026-11-23 — PR #7 cross-platform CI passed; review-ready
+
+- The latest implementation and test commit 1ba41480d4314a789775f12826b8994489830ef1 passed both GitHub Actions workflows: Python checks run 45108231189 and CLI foundation run 45108231166.
+- Python checks passed on Python 3.11 and 3.12.
+- CLI foundation matrix passed on Windows and Ubuntu, each with Python 3.11 and 3.12. This includes editable dependency installation, compileall, PowerShell installer syntax, Windows installer safety integration tests, offline unit tests, wheel template packaging, and CLI entrypoint checks.
+- The Windows cp1252 output regression is fixed; TUI tests assert that save/cancel output can be encoded by cp1252. Region auto-sync and credential-safe profile selection have dedicated tests.
+- PR #7 remains open and unmerged pending the user's explicit merge approval. The arrow-key UX still requires a manual smoke test in the user's actual Windows Terminal/PowerShell session after the PR is merged.
+- The handoff/worklog update is documentation-only and is being committed separately; GitHub may run the workflows again for that newer PR head, so verify the latest head checks before any merge.
+- No local workstation was changed. No OCI API calls, VM launches, billing/IAM/network changes, or production deployments were performed.

@@ -45,7 +45,7 @@ The user explicitly approved the order: PR #5 first, then PR #6, with fresh CI g
 - Added validation for local OCI SDK file/profile, region shape/match, AD, VCN/subnet/image OCID prefixes, SSH public-key file, A1-only shape, supported OS and boot volume performance, whole-number resource sizing, usage and policy limits.
 - Successful configure saves always force FREE_TIER, paid resources disabled, VM creation disabled, and clear the launch phrase.
 - Adds pinned dependency questionary==2.1.1 and offline tests for editor validation, backup, cancellation, home-menu routing, and EOF behavior.
-- CI history: an earlier Windows 3.11/3.12 run failed because cp1252 could not encode a box-drawing character in the new terminal header; Linux 3.11/3.12 and Python checks passed on that earlier head. The output was changed to ASCII-safe characters and tests now assert Windows cp1252 output compatibility plus home-region/profile-selection behavior. The latest branch head has fresh workflows; always fetch the live PR head SHA and inspect both current workflows before merging, rather than relying on historical run IDs or an empty combined-status list.
+- CI evidence: implementation/test commit 1ba41480d4314a789775f12826b8994489830ef1 passed Python checks run 45108231189 and CLI foundation run 45108231166. Both Python checks (3.11/3.12) passed; the full CLI matrix passed on Windows and Ubuntu with Python 3.11/3.12, including installer safety integration, offline tests, wheel packaging, and CLI entrypoint checks. An earlier Windows cp1252 encoding failure was fixed and covered by tests. A documentation-only update may trigger newer workflows; check the live PR head and both workflows before merging.
 - No local workstation update has been applied yet. User's existing starter config remains at %APPDATA%\oci-platform\config.json, and VM creation was observed disabled.
 - No OCI API calls, VM launches, billing/IAM/network changes, production deployments, or main-branch changes were made for PR #7.
 ## Implemented
@@ -101,7 +101,7 @@ Prerequisites: Git for Windows and Python 3.11 or newer. The chosen install dire
 
 1. Recheck PR #7 Windows 3.11 and Python 3.12 GitHub Actions jobs for run 45096927735; Linux 3.11/3.12 and Python checks have passed at the last check.
 2. Review the full PR diff and CI outcome. Do not merge PR #7 without the user's explicit approval.
-3. After merge approval and successful required checks, update the existing Windows clone in place (do not rerun the installer because it refuses existing directories):
+3. After explicit merge approval, successful latest-head checks, and main-branch CI verification, update the existing Windows clone in place (do not rerun the installer because it refuses existing directories):
 
    ```powershell
    Set-Location "$HOME\oci-automation-platform"
