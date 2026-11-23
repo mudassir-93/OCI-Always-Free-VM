@@ -69,6 +69,7 @@ Important limitations:
 - oci_platform/templates/config.example.json — packaged, account-neutral first-run configuration.
 - pyproject.toml — installable Python project and `oci-platform` console entry point.
 - tests/test_cli.py — offline tests for setup, profile handling, command safety, engine argv integration, and process locking.
+- tests/test_tui.py — offline tests for terminal editor validation, region synchronization, encoding compatibility, backup, cancellation, and creation-disarm behavior.
 - oci-free — convenience command wrapper; all exposed monitoring commands remain read-only.
 - config.example.json — generic example configuration; never put real OCIDs or credentials here.
 - tests/test_policy.py — offline policy tests.
@@ -161,4 +162,4 @@ The first implementation milestone is merged into `main` via PR #5. The currentl
 
 The current milestone-by-milestone plan, completion state, CI evidence, workstation validation gaps, and ordered next actions are maintained in [docs/PROJECT_STATUS.md](../PROJECT_STATUS.md). Read that file before continuing implementation or reporting project readiness.
 
-As of 2026-11-23, PRs #5–#8 are merged. Core CLI/installer/configuration/TUI code delivery is complete and the exact PR #8 head passed all six required CI jobs. Real Windows Terminal interaction, fresh Linux workstation installation, user-local configuration, and live OCI tenancy validation remain outstanding. No live VM launch has been performed; the guarded launch remains optional and disabled by default.
+As of 2026-11-23, PRs #5–#9 are merged. Core CLI/installer/configuration/TUI code delivery is complete. PR #8 and PR #9 exact heads each passed all six required CI jobs before merge; PR #9 merge commit is `fb46199e16739f30edd5045b7a4282b275cc3bfb`. Real Windows Terminal interaction, fresh Linux workstation installation, user-local configuration, and live OCI tenancy validation remain outstanding. No live VM launch has been performed; the guarded launch remains optional and disabled by default.
