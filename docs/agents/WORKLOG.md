@@ -262,7 +262,9 @@ For each future milestone, append:
 
 - Reviewed the merged CLI/installer/interactive UX documentation while the operator's Windows PC was unavailable.
 - Corrected a stale README sentence that still described the merged CLI, wizard, and installers as pending milestones.
-- Replaced the duplicated and contradictory `AI_HANDOFF.md` with a current continuation record: verified main HEAD, merged PRs #5–#7, exact post-merge CI run IDs, safety boundaries, remaining manual Windows Terminal validation, and the safe update procedure for the existing checkout.
-- Proposed as PR #8: https://github.com/mudassir-93/OCI-Always-Free-VM/pull/8. This is a documentation-only branch; no application code or dependencies changed.
-- Automated CI is expected to validate the PR head. Manual Windows Terminal interaction remains NOT RUN because the operator's PC is unavailable.
+- Replaced the duplicated and contradictory `AI_HANDOFF.md` with a current continuation record: verified main HEAD, merged PRs #5–#8, exact CI run IDs, safety boundaries, remaining manual Windows Terminal validation, and the safe update procedure for the existing checkout.
+- Submitted as PR #8: https://github.com/mudassir-93/OCI-Always-Free-VM/pull/8; squash-merged as `948fc148a416556f25900600c21223605e4f3066`. This was a documentation-only change; no application code or dependencies changed.
+- Exact PR head `dfe10f57ffb6adae34b996ae3d65b1f094b9f8ca` passed Python checks run `45109638479` (Python 3.11/3.12) and CLI foundation run `45109638472` (Windows/Linux × Python 3.11/3.12). Windows 3.12 completed successfully, including PowerShell parsing and Windows installer safety integration tests.
+- Manual Windows Terminal interaction remains NOT RUN because the operator's PC is unavailable.
+- PR #8 merge commit: `948fc148a416556f25900600c21223605e4f3066`. Post-merge push-triggered CI status was not exposed by the available commit-workflow lookup; do not claim it was verified.
 - No local workstation changes, OCI API calls, VM launches, billing/IAM changes, EC2 changes, or production deployments were performed.
