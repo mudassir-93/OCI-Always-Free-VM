@@ -24,7 +24,7 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 | Item | Verified state |
 |---|---|
 | Default branch | `main` |
-| Latest main commit inspected for project status | `fb46199e16739f30edd5045b7a4282b275cc3bfb` |
+| Latest main commit inspected for project status | `e60bbc76854b5a712f72a5c63ff6a1e5ee1f884b` |
 | PR #8 release merge commit | `948fc148a416556f25900600c21223605e4f3066` (squash merge into `main`) |
 | PR #5 | Merged; CLI foundation |
 | PR #6 | Merged; installer and guided configuration |
@@ -33,15 +33,19 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 | PR #8 merge commit | `948fc148a416556f25900600c21223605e4f3066` |
 | PR #9 | Merged; consolidated project progress tracker and roadmap |
 | PR #9 merge commit | `fb46199e16739f30edd5045b7a4282b275cc3bfb` |
+| PR #10 | Merged; synchronized handoff and project tracker after PR #9 |
+| PR #10 merge commit | `e60bbc76854b5a712f72a5c63ff6a1e5ee1f884b` |
 | PR #7 merge commit | `605a01ae92d57920ee116539aa8ed53eae976503` |
 | CI on PR #7 merge commit | Python checks run `45108762748` passed on Python 3.11/3.12; CLI foundation run `45108762718` passed on Windows and Ubuntu with Python 3.11/3.12 |
 | CI on latest verified main HEAD before PR #8 | Python checks run `45109001375` passed on Python 3.11/3.12; CLI foundation run `45109001365` passed on Windows/Ubuntu × Python 3.11/3.12 |
 | CI on PR #8 exact head `dfe10f57ffb6adae34b996ae3d65b1f094b9f8ca` | Python checks run `45109638479` passed on Python 3.11/3.12; CLI foundation run `45109638472` passed on Windows/Linux × Python 3.11/3.12 |
 | CI on PR #9 exact head `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a` | Python checks run `45110780545` passed on Python 3.11/3.12; CLI foundation run `45110780528` passed on Windows/Linux × Python 3.11/3.12 (6/6 jobs total) |
-| Local Windows update and interactive smoke test | Pending; the operator's PC is not currently available |
+| CI on PR #10 exact head `e6d39d94067a7261d893df5cc5a0b4d19288eb26` | Python checks run `45113875820` passed on Python 3.11/3.12; CLI foundation run `45113875739` passed on Windows/Linux × Python 3.11/3.12 (6/6 jobs total) |
+| Fresh Windows PC install and interactive smoke test | Operator reported success on a second PC on 2026-11-23; exact OS/Python versions and test output were not captured |
+| Original Windows checkout update | Still pending; do not confuse the second-PC fresh install with updating the original checkout |
 | Live OCI / production work | Not performed |
 
-PRs #5–#9 are merged. PR #8 and PR #9 exact heads passed both required workflows before their squash merges. For PR #9, the exact pre-merge CI head was `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a`; the available combined-status and PR-run lookup did not expose a separate post-merge push-triggered run for merge commit `fb46199e16739f30edd5045b7a4282b275cc3bfb`, so do not describe post-merge CI as verified.
+PRs #5–#10 are merged. PR #8, PR #9, and PR #10 exact heads passed both required workflows before their squash merges. PR #10 exact head was `e6d39d94067a7261d893df5cc5a0b4d19288eb26`; merge commit `e60bbc76854b5a712f72a5c63ff6a1e5ee1f884b`. The available commit lookup did not expose a separate post-merge push-triggered run for PR #10's merge commit, so do not describe post-merge CI as verified.
 
 ## Implemented product
 
@@ -71,7 +75,7 @@ PRs #5–#9 are merged. PR #8 and PR #9 exact heads passed both required workflo
 
 ## Validation limits and remaining work
 
-The current plan, milestone-by-milestone completion, CI evidence, and ordered remaining work are maintained in [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md). The code-delivery milestones are complete; workstation and live-tenancy acceptance gates remain open.
+The current plan, milestone-by-milestone completion, CI evidence, workstation validation gaps, and ordered remaining work are maintained in [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md). The code-delivery milestones are complete. The operator has now reported a successful fresh Windows install and interactive smoke test on a second PC; fresh Linux installation, the original Windows checkout update, real local OCI profile diagnostics, and live-tenancy validation remain open.
 
 At the last review, the existing Windows checkout had not been updated to the latest main branch, interactive Windows Terminal testing had not been performed, local OCI application configuration had not been completed/verified, and no live OCI audit or capacity run had been performed. No VM launch, account/billing change, network provisioning, or production deployment has taken place.
 
