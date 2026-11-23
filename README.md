@@ -19,7 +19,7 @@ Get-Content .\install.ps1
 .\install.ps1
 ```
 
-If PowerShell blocks the script, run this command in the same session, then retry ` .\install.ps1`:
+If PowerShell blocks the script, run this command in the same session, then retry `.\install.ps1`:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
