@@ -58,6 +58,7 @@ The example config uses conservative policy caps. The live Limits API check is s
 ├── oci_free_watch.py
 ├── oci_platform/
 │   ├── cli.py
+│   ├── tui.py
 │   └── templates/config.example.json
 ├── install.ps1
 ├── install.sh
@@ -111,7 +112,29 @@ python -m pip install --upgrade pip
 python -m pip install -e .
 ~~~
 
-Start with local setup and diagnostics:
+Start the interactive terminal home screen by running:
+
+~~~bash
+oci-platform
+~~~
+
+Use the arrow keys and Enter to choose local actions such as Configure / Edit settings, diagnostics, configuration summary, status, logs, and starter setup. The home screen does not run OCI cloud operations; VM audit and monitoring remain explicit commands.
+
+The guided configuration editor is also available directly:
+
+~~~bash
+oci-platform configure
+~~~
+
+Use the arrow keys to choose a settings group, select the individual field to edit, review the configuration, and then save. The target region automatically follows the tenancy home region. The editor validates paths, profile names, region format, OCID prefixes, SSH public-key files, whole-number compute/storage values, and local policy limits before saving. Press Ctrl+C to cancel safely without writing the pending edits.
+
+For scripts or terminals without interactive arrow-key support, use the line-oriented fallback:
+
+~~~powershell
+oci-platform configure --plain
+~~~
+
+Start with version and local diagnostics:
 
 ~~~bash
 oci-platform --version
@@ -191,17 +214,21 @@ The installer deliberately does not add the application to the system PATH or in
 
 ## Guided configuration wizard
 
-Run oci-platform configure after installation. The wizard asks for your local OCI SDK config path and profile, tenancy home region, availability domain, existing VCN/subnet, target shape resources, SSH public-key path, pinned Ubuntu image OCID, and the manual Always Free image-label and current-month usage confirmations.
+Run oci-platform configure after installation. In a normal terminal, this opens the arrow-key editor rather than a long sequence of one-shot questions. Select a category, choose a field, edit its current value, and return to the category menu. The final review lists missing or invalid items before it permits saving.
 
-- The wizard is local-only; it does not call OCI APIs.
-- It refuses a target region that differs from the tenancy home region.
+- The main terminal home screen opens when running oci-platform with no arguments.
+- Menus support arrow keys, j/k, and Enter. Ctrl+C exits the current interactive flow without saving pending edits.
+- The target region follows the tenancy home region automatically; it cannot be set to a different region.
+- OCI SDK profile names are selected from the local SDK config file; credential values are never displayed.
+- Region syntax, VCN/subnet/image identifier prefixes, SSH public-key file, integer resource sizes, configured A1/storage caps, and supported Ubuntu/A1 settings are checked before saving.
+- The editor is local-only; it does not call OCI APIs.
 - It keeps allow_paid_resources=false and account_type=FREE_TIER.
-- It enforces the configured local A1 and storage caps before saving.
 - It creates a timestamped backup before updating an existing config.
 - It never asks for or stores your OCI private API key or SSH private key.
-- It always forces mode.creation_enabled=false and clears the creation confirmation phrase. It cannot arm a launch.
+- Every successful save forces mode.creation_enabled=false and clears the creation confirmation phrase. The editor cannot arm a launch.
+- oci-platform configure --plain remains available for non-interactive or line-oriented terminals.
 
-After configuration, run oci-platform doctor, review the output, and then use oci-platform vm audit. Audit is read-only. Review the live tenancy and billing status yourself; a successful local wizard is not a guarantee of Always Free eligibility or zero charges.
+After configuration, run oci-platform doctor, review the output, and then use oci-platform vm audit only when you deliberately want a read-only live OCI call. Review the live tenancy and billing status yourself; a successful local wizard is not a guarantee of Always Free eligibility or zero charges.
 
 ## Quick start
 
