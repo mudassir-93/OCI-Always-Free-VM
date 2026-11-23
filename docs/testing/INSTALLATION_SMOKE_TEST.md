@@ -70,7 +70,7 @@ In a real PowerShell or Windows Terminal session, verify:
 
 ## Linux — fresh install
 
-Run as an ordinary user, not with sudo:
+Run as an ordinary user, not with sudo. The installer supports optional `OCI_PLATFORM_REPOSITORY` and `OCI_PLATFORM_BRANCH` variables for a trusted fork or test branch; defaults are the public project URL and `main`.
 
 ```bash
 export OCI_PLATFORM_HOME="$HOME/oci-platform-smoke-test"
@@ -148,11 +148,16 @@ Record only:
 
 Do not attach `~/.oci/config`, app config, state files, logs, key files, environment dumps, or screenshots containing credentials/OCIDs.
 
+## Automated fresh Linux installer coverage
+
+The CLI foundation workflow runs `tests/test_install_linux.sh` on Ubuntu/Python 3.12. It clones the exact PR source branch into a fresh temporary directory as a non-root user and invokes the actual `install.sh`. It verifies the installed commit, CLI version/help, redacted config summary, Free-Tier-only and creation-disabled starter config, existing-directory sentinel preservation, and cleanup after a failed clone. This job passed on PR #12's exact head.
+
+This hosted-runner test is not a manual install on a separate physical Linux workstation and does not contact OCI.
+
 ## Known coverage gaps
 
-- GitHub Actions verifies shell/PowerShell syntax and runs the Windows installer safety integration script. Linux integration tests cover clone failure, virtual-environment failure, and existing-directory preservation.
-- GitHub Actions now executes the PowerShell installer on Windows with a temporary existing directory and a simulated Git-clone failure. This verifies preservation and cleanup behavior without contacting OCI or cloning the live repository. It is not a successful end-to-end installation from the public default branch.
-- A real fresh Linux workstation install has not been performed as part of CI.
+- GitHub Actions verifies shell/PowerShell syntax and runs the Windows installer safety integration script. Linux CI now performs an actual end-to-end fresh install plus existing-directory and failed-clone checks.
+- GitHub Actions executes the PowerShell installer on Windows with a temporary existing directory and a simulated Git-clone failure. This verifies preservation and cleanup behavior without contacting OCI, but it is not a successful end-to-end Windows installation from the public default branch.
 - The current suite already covers timestamped backup creation and clearing a previously armed creation flag/phrase (`tests/test_tui.py`), plus unsupported boot-volume VPUs and write-free rejection (`tests/test_cli.py`). These automated tests do not replace the manual terminal interaction checks above.
 - No live OCI audit or VM launch is required to close the local installer milestone.
 
@@ -161,7 +166,7 @@ Do not attach `~/.oci/config`, app config, state files, logs, key files, environ
 Do not call the installer milestone release-ready until:
 1. the current PR head has green Windows/Linux CI;
 2. a fresh Windows installation has been manually completed;
-3. a fresh Linux installation has been manually completed;
+3. the hosted Ubuntu fresh-install integration test passes on the exact PR head; a separate physical Linux workstation install is completed when Linux is an intended operator platform;
 4. existing-directory protection is verified on both platforms;
 5. configuration remains creation-disabled after setup/configure;
 6. no secrets or account-specific identifiers are present in committed files or test evidence;

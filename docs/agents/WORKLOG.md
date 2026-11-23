@@ -299,3 +299,22 @@ For each future milestone, append:
 - This result does not establish that the original Windows checkout was updated, that the separate existing-directory/sentinel preservation test passed, that fresh Linux installation passed, or that the real OCI SDK profile/tenancy was validated.
 - Fresh Linux workstation install, original Windows checkout update, local OCI configuration/doctor validation, and explicitly approved read-only live OCI audit/capacity checks remain pending. Actual VM creation remains optional and disabled.
 - No repository application code, dependencies, workstation files, OCI resources, billing/IAM, EC2, or production deployments were changed as part of this test report. No live OCI calls or VM launch were performed.
+
+
+## 2026-11-23 — PR #11 merged; operator Windows test recorded
+
+- PR #11 records the operator-reported successful fresh Windows install and interactive CLI/TUI smoke test on a second PC.
+- Exact PR head: `23a2528f93b232a68b7602922ebb724a19d1cc1d`; PR #11 squash merge commit: `6c57040b458cc30c98e3920c5f572f10dc8ab8af`.
+- CI passed all six jobs before merge: Python checks run `45116410721` (3.11/3.12) and CLI foundation run `45116410713` (Windows/Linux × 3.11/3.12).
+- The user-reported Windows pass remains labelled as operator-reported because exact OS/Python version, installed SHA and captured transcript were not supplied.
+
+## 2026-11-23 — PR #12 merged; real Linux fresh-installer CI added
+
+- Updated both installers to accept optional `OCI_PLATFORM_REPOSITORY` and `OCI_PLATFORM_BRANCH` environment variables. Defaults remain this repository's public clone URL and `main`; no behavior changes when the variables are unset.
+- Added `tests/test_install_linux.sh` and an Ubuntu/Python 3.12 CI step that clones the exact PR source branch as a non-root user into a unique temporary directory and runs the public Linux installer end-to-end.
+- The new integration test verifies CLI executable/version/help, redacted starter config summary, Free Tier-only and creation-disabled config, exact installed commit, existing-destination sentinel preservation, and cleanup after a deliberately failed clone.
+- Exact PR head `8a3f0436b3a6988dcae5d4f620645a5596baa5bd`; PR #12 squash merge commit: `7c5e583fe2103f8b39aee82de54dfdde2f35aa6d`.
+- CI passed all six jobs: Python checks run `45117728501` (3.11/3.12) and CLI foundation run `45117728426` (Windows/Linux × Python 3.11/3.12). The new Ubuntu/Python 3.12 fresh-install integration step passed and confirmed it installed the exact PR head.
+- A separate attempt to run the installer in an isolated Debian 13 container could not resolve `raw.githubusercontent.com` because the container environment had no DNS access; no local manual Linux pass is claimed. The hosted GitHub Actions Ubuntu integration test completed successfully.
+- No OCI credentials/profile were configured, no live OCI API calls or VM launches were performed, and no workstation, billing/IAM, EC2 or production resources were changed.
+- Remaining: update the original Windows checkout when available; validate the real local OCI profile and diagnostics; request separate explicit approval before any live read-only OCI audit/capacity run. Manual Linux workstation install remains an optional additional operator acceptance check; automated hosted Linux installer coverage is now present.

@@ -70,6 +70,9 @@ Important limitations:
 - pyproject.toml — installable Python project and `oci-platform` console entry point.
 - tests/test_cli.py — offline tests for setup, profile handling, command safety, engine argv integration, and process locking.
 - tests/test_tui.py — offline tests for terminal editor validation, region synchronization, encoding compatibility, backup, cancellation, and creation-disarm behavior.
+- tests/test_installers.py — offline Linux installer failure, virtual-environment cleanup, and existing-directory preservation tests.
+- tests/test_installers_windows.ps1 — Windows installer existing-directory preservation and failed-clone cleanup integration checks.
+- tests/test_install_linux.sh — hosted Ubuntu end-to-end fresh install, exact-commit, safe-config, destination-preservation, and failure-cleanup integration test.
 - oci-free — convenience command wrapper; all exposed monitoring commands remain read-only.
 - config.example.json — generic example configuration; never put real OCIDs or credentials here.
 - tests/test_policy.py — offline policy tests.
@@ -162,4 +165,4 @@ The first implementation milestone is merged into `main` via PR #5. The currentl
 
 The current milestone-by-milestone plan, completion state, CI evidence, workstation validation gaps, and ordered next actions are maintained in [docs/PROJECT_STATUS.md](../PROJECT_STATUS.md). Read that file before continuing implementation or reporting project readiness.
 
-As of 2026-11-23, PRs #5–#10 are merged. Core CLI/installer/configuration/TUI code delivery is complete. PR #8, PR #9, and PR #10 exact heads each passed all six required CI jobs before merge; PR #10 merge commit is `e60bbc76854b5a712f72a5c63ff6a1e5ee1f884b`. The operator reported that fresh Windows installation and interactive smoke testing worked on a second PC. Fresh Linux workstation installation, original Windows checkout update, real local OCI profile validation, and live OCI tenancy validation remain outstanding. No live VM launch has been performed; the guarded launch remains optional and disabled by default.
+As of 2026-11-23, PRs #5–#12 are merged. Core CLI/installer/configuration/TUI code delivery is complete. PR #11 and PR #12 exact heads each passed all six required CI jobs before merge; PR #12 merge commit is `7c5e583fe2103f8b39aee82de54dfdde2f35aa6d`. The operator reported that fresh Windows installation and interactive smoke testing worked on a second PC. PR #12 adds a non-root fresh Linux installer integration test to Ubuntu/Python 3.12 CI; that exact-branch test passed, including CLI, safe config, destination preservation and failure cleanup. Manual Linux workstation installation, original Windows checkout update, real local OCI profile validation, and live OCI tenancy validation remain outstanding. No live VM launch has been performed; the guarded launch remains optional and disabled by default.
