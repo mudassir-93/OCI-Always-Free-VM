@@ -485,7 +485,7 @@ def validate_configuration(config: dict[str, Any]) -> list[str]:
         if boot < 50 or boot > volume_cap:
             issues.append("Boot volume must be at least 50 GB and within the configured combined volume cap.")
     except (TypeError, ValueError, OverflowError):
-        issues.append("A1 resource caps and requested compute/storage values must be valid positive numbers.")
+        issues.append("A1 resource caps and requested compute/storage values must be valid positive whole numbers (caps may be decimal).")
     for key in (
         "monthly_a1_ocpu_hours", "monthly_a1_memory_gb_hours",
         "other_monthly_a1_ocpu_hours", "other_monthly_a1_memory_gb_hours",
