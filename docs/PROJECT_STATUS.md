@@ -3,13 +3,14 @@
 **Status checked:** 2026-11-23  
 **Repository:** [mudassir-93/OCI-Always-Free-VM](https://github.com/mudassir-93/OCI-Always-Free-VM)  
 **Default branch at review:** `main`  
-**Latest main commit inspected:** `7c5e583fe2103f8b39aee82de54dfdde2f35aa6d`
+**Main baseline inspected before this documentation sync:** `3307f8f44b94c888bdd8f0b76b3746eed19f5dba`  
+**GitHub queue:** No open pull requests or issues were found on 2026-11-23.
 
 ## Executive summary
 
 The agreed V1 repository implementation is complete: the existing A1 automation engine is wrapped in a cross-platform CLI, installers and guided configuration are merged, the arrow-key terminal interface is merged, and the project handoff documentation is current.
 
-**The code-delivery phase is complete; end-to-end operator validation is still in progress.** On 2026-11-23, the operator reported that a fresh Windows installation and CLI/interactive terminal smoke test worked on a second PC. PR #12 also added a successful end-to-end fresh Linux install to the Ubuntu CI matrix, including creation-disabled config, exact-commit verification, existing-directory preservation, and failed-clone cleanup. A separate manual Linux workstation install has not been reported. The original Windows checkout update, real local OCI profile diagnostics, and all live OCI validation remain outstanding. No VM launch has been performed.
+**The code-delivery phase is complete; end-to-end operator validation is still in progress.** On 2026-11-23, the operator reported that a fresh Windows installation and CLI/interactive terminal smoke test worked on a second PC. PR #12 also added a successful end-to-end fresh Linux install to the Ubuntu CI matrix, including creation-disabled config, exact-commit verification, existing-directory preservation, and failed-clone cleanup. A separate manual Linux workstation install has not been reported. The original Windows checkout update, real local OCI profile diagnostics, and all live OCI validation remain outstanding. PR #13 then synchronized the validation record, and the squash-merge commit passed both push-triggered main workflows (6/6 jobs). No VM launch has been performed.
 
 | Workstream | Progress | Evidence / limitation |
 |---|---|---|
@@ -26,6 +27,8 @@ The agreed V1 repository implementation is complete: the existing A1 automation 
 | Automated CI for PR #11 | 6/6 jobs passed | Exact PR head `23a2528f93b232a68b7602922ebb724a19d1cc1d`: Python checks run `45116410721` and CLI foundation run `45116410713`; Windows/Linux × Python 3.11/3.12 all passed before squash merge. |
 | Linux clean-install integration — PR #12 | Passed in CI | Ubuntu/Python 3.12 installed the exact PR commit in a fresh temporary directory as a non-root user; CLI, redacted config, disabled creation, existing-directory preservation, and failed-clone cleanup all passed. |
 | Automated CI for PR #12 | 6/6 jobs passed | Exact PR head `8a3f0436b3a6988dcae5d4f620645a5596baa5bd`: Python checks run `45117728501` and CLI foundation run `45117728426`; Windows/Linux × Python 3.11/3.12 all passed before squash merge. |
+| PR #13 documentation synchronization CI | 6/6 jobs passed | Exact PR head `83e193d07b435a323b9d7771b0e5539af4893022`: Python checks run `45118315425` and CLI foundation run `45118315427`; Windows/Linux × Python 3.11/3.12 all passed before merge. |
+| Latest main push CI after PR #13 | 6/6 jobs passed | Merge commit `3307f8f44b94c888bdd8f0b76b3746eed19f5dba`: Python checks run `45118630570` and CLI foundation run `45118630579`; both push-triggered workflows completed successfully. |
 | Automated CI for PR #9 | 6/6 jobs passed | Exact PR head `4d23c696f22c2b5cb6c50fb7d3ce864eb479139a`: Python checks run `45110780545` (3.11/3.12) and CLI foundation run `45110780528` (Windows/Linux × 3.11/3.12) all passed before squash merge. |
 | Fresh Windows PC installation and CLI/TUI smoke test | Passed — operator-reported | On 2026-11-23, the operator confirmed the fresh download/install and the described version/help/config-summary, home-menu, and configuration-editor checks worked on a second PC. Exact OS/Python versions and captured output were not supplied; this is not an independently observed test run. |
 | Existing Windows checkout update | Pending | This second-PC fresh install does not confirm that the original `$HOME\oci-automation-platform` checkout has been updated in place. |
@@ -60,6 +63,7 @@ The agreed V1 scope is intentionally narrow:
 | Handoff and release-state synchronization | [PR #10](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/10) | **MERGED** |
 | Operator-reported Windows validation record | [PR #11](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/11) | **MERGED** |
 | Fresh Linux installer integration and source branch override | [PR #12](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/12) | **MERGED** |
+| Handoff and validation record synchronization | [PR #13](https://github.com/mudassir-93/OCI-Always-Free-VM/pull/13) | **MERGED** |
 
 ### What the delivered CLI contains
 
@@ -108,7 +112,7 @@ PR #12 was squash-merged as main commit `7c5e583fe2103f8b39aee82de54dfdde2f35aa6
 
 The Windows jobs include PowerShell installer parsing, Windows installer preservation/failure integration tests, offline tests, packaging and CLI entry-point checks. Ubuntu jobs include compilation, shell syntax, offline tests, packaging and CLI entry-point checks; the Ubuntu/Python 3.12 job also runs a real fresh installation of the exact PR branch as a non-root user.
 
-These are CI results for the exact PR head before the documentation-only squash merge. Later main-branch edits after that merge were documentation-only; a surfaced post-merge push-workflow result for the latest main commit was not available during this review. Do not describe the latest main commit itself as having a separately verified post-merge run.
+The PR #13 exact head `83e193d07b435a323b9d7771b0e5539af4893022` passed all six required jobs before merge. It was squash-merged as `3307f8f44b94c888bdd8f0b76b3746eed19f5dba`. The subsequent push-triggered workflows for that exact main commit also passed: Python checks run `45118630570` and CLI foundation run `45118630579`, covering Python 3.11/3.12 and Windows/Linux × Python 3.11/3.12 (6/6 jobs total). These checks validate repository code and installation workflows; they do not validate the user's OCI tenancy, billing state, or VM capacity.
 
 ## Remaining work — ordered plan
 
