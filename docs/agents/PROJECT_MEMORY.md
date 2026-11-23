@@ -118,9 +118,9 @@ An agent may inspect and edit repository code when asked. It must not silently:
 
 Ask before any of these actions. Keep the live server and local account configuration separate from public repository changes.
 
-## CLI V1 foundation — implementation branch
+## CLI V1 foundation — merged into main (PR #5)
 
-The first implementation milestone is being developed on `feat/cli-v1-foundation`; it is not yet merged into `main`.
+The first implementation milestone is merged into `main` via PR #5. The currently released CLI remains a thin layer over the established engine.
 
 - Product direction: OCI-focused automation platform, CLI-first for V1, with Windows and Linux support.
 - Backward compatibility: gradual. Existing `python oci_free_watch.py ...` commands and the Linux `oci-free` wrapper remain supported.
@@ -129,12 +129,12 @@ The first implementation milestone is being developed on `feat/cli-v1-foundation
 - Setup creates a per-user config from a packaged generic template only when missing. It does not connect to OCI, collect credentials, arm VM creation, or overwrite an existing config.
 - VM audit and once remain read-only. VM monitor remains read-only unless the operator explicitly supplies the creation CLI switch; the engine's existing two local confirmations and live preflight checks remain mandatory.
 - The engine now accepts an argv list for safe in-process CLI integration and uses platform-specific non-blocking process locking instead of importing POSIX `fcntl` unconditionally.
-- GitHub Actions is configured to test Windows and Linux on Python 3.11 and 3.12. CI results must be checked before considering this milestone complete.
+- GitHub Actions tests Windows and Linux on Python 3.11 and 3.12; PR #5's required checks passed before merge.
 - The first foundation milestone did not include the later installer, configuration wizard, or interactive terminal home screen; these were delivered in Milestone 2 and the follow-up terminal UX milestone.
 
-## CLI V1 Milestone 2 — installer and guided configuration (in progress)
+## CLI V1 Milestone 2 — installer and guided configuration (merged into main via PR #6)
 
-- Developed on stacked branch `feat/cli-v1-installer-wizard`, based on the CLI foundation branch. It must not be merged ahead of its dependency.
+- Developed on `feat/cli-v1-installer-wizard` and merged after the foundation dependency was merged.
 - Added `oci-platform configure`, an interactive local-only wizard for OCI SDK config/profile, Free Tier attestation, home region, existing network identifiers, A1 resources, usage budgets, SSH public-key path, pinned Ubuntu image, retry settings, log/state paths, and log level.
 - The wizard rejects a target region different from the tenancy home region and validates requested resources against the operator-entered local policy caps.
 - The wizard always forces creation disabled and clears the confirmation phrase, even if an existing config was armed. It backs up an existing config before saving.
@@ -142,7 +142,7 @@ The first implementation milestone is being developed on `feat/cli-v1-foundation
 - Installer scripts do not call OCI, create cloud resources, add PATH entries, install systemd services, or arm creation.
 - Added offline tests for the wizard's successful configuration path and refusal when the operator does not confirm Free Tier.
 - Added CI syntax validation for both installer scripts.
-- The installers become usable from the public default branch only after this PR and the CLI foundation dependency are reviewed and merged.
+- The Windows and Linux installers are now available from the public default branch.
 - No live OCI operations or production deployments were performed.
 
 
@@ -155,4 +155,4 @@ The first implementation milestone is being developed on `feat/cli-v1-foundation
 - The home menu only offers local actions; cloud audit/monitor operations remain explicit subcommands. No live OCI APIs are called by the terminal editor.
 - Every successful wizard save reasserts account_type=FREE_TIER, allow_paid_resources=false, mode.creation_enabled=false, and an empty creation confirmation phrase.
 - Questionary is pinned as a small pure-Python UI dependency; the OCI SDK and engine remain unchanged.
-- Cross-platform automated validation is pending for this branch; do not describe this milestone as complete until CI passes.
+- PR #7 is open. Linux Python 3.11/3.12 jobs and the separate Python checks passed on earlier PR head 3dea45331efd80a970829d7583f426c7109ead06. Documentation updates advanced the branch; verify the latest PR head CI before merge. Manual Windows Terminal interaction remains a separate smoke-test requirement.
