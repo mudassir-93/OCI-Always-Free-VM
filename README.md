@@ -33,7 +33,7 @@ less install.sh
 bash install.sh
 ```
 
-The installer creates a isolated virtual environment and a creation-disabled starter config in `~/oci-automation-platform`. It does not require administrator/root privileges or contact OCI. It will not overwrite an existing installation.
+The installer creates an isolated virtual environment and a creation-disabled starter config in `~/oci-automation-platform`. It does not require administrator/root privileges or contact OCI. It will not overwrite an existing installation.
 
 ## First run
 
