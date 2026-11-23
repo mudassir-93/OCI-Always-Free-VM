@@ -19,9 +19,10 @@ Get-Content .\install.ps1
 .\install.ps1
 ```
 
-If PowerShell blocks the script, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` in that session and then run ` .\install.ps1` again.
+If PowerShell blocks the script, run this command in the same session, then retry ` .\install.ps1`:
 
 ```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ```
 
 **Linux**
@@ -32,7 +33,7 @@ less install.sh
 bash install.sh
 ```
 
-The installer creates a private virtual environment and a creation-disabled starter config in `~/oci-automation-platform`. It does not require administrator/root privileges or contact OCI. It will not overwrite an existing installation.
+The installer creates a isolated virtual environment and a creation-disabled starter config in `~/oci-automation-platform`. It does not require administrator/root privileges or contact OCI. It will not overwrite an existing installation.
 
 ## First run
 
