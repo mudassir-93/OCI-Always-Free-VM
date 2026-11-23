@@ -73,6 +73,29 @@ CLI="$HOME/oci-automation-platform/.venv/bin/oci-platform"
 "$CLI" config show
 ```
 
+## Let an AI agent manage the project
+
+You can use an AI coding agent to work with this repository in plain English — you do not have to understand the code first. Open the repository folder in an agent with file and terminal access, such as **Claude Code, OpenAI Codex, Gemini CLI, VS Code Copilot Agent, Cursor, or Antigravity**.
+
+Ask your agent to:
+- Explain the project and guide you through installation and configuration.
+- Check your local setup, run diagnostics and tests, and troubleshoot errors.
+- Add features, fix bugs, edit configuration, and maintain the documentation.
+- Review changes and explain what needs your approval.
+
+**Start with this prompt:**
+
+```text
+Read AGENTS.md, docs/agents/PROJECT_MEMORY.md, and README.md.
+Help me set up and manage this project step by step. Explain things
+in simple language, make safe local changes, and run the relevant tests.
+Keep OCI actions read-only. Never enable VM creation or contact my
+OCI tenancy without asking for my explicit approval first.
+Never display, request, or commit my credentials or private keys.
+```
+
+See the [AI coding-agent guide](docs/agents/README.md) for setup instructions and prompts for different tools. A coding agent can work on your local project; live OCI operations and VM creation remain separately protected and require your approval.
+
 ## Check OCI
 
 After configuring your local OCI SDK profile and existing network details, use the same `$cli` variable on Windows or `$CLI` on Linux from the first-run section:
