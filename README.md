@@ -3,8 +3,7 @@
 [![Python checks](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/tests.yml)
 [![Windows & Linux CLI](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/cli-foundation.yml/badge.svg?branch=main)](https://github.com/mudassir-93/OCI-Always-Free-VM/actions/workflows/cli-foundation.yml)
 
-![Illustration: moving from uncertain cloud capacity to a simple terminal-based OCI workflow](docs/assets/oci-a1-workflow-cover.jpg)
-
+<img width="1938" height="812" alt="From Cloud Uncertainty to CLI Clarity" src="https://github.com/user-attachments/assets/e908b2cf-7797-411a-bc03-52fae6d2b148" />
 A small Python CLI for checking Oracle Cloud Infrastructure (OCI) Ampere A1 availability and optionally requesting one VM after explicit approval and safety checks. Works on Windows and Linux.
 
 **Safe by default:** installation and configuration are local-only. Audits and monitoring are read-only unless the separate VM-creation safeguards are deliberately enabled. Capacity and Always Free eligibility are never guaranteed.
