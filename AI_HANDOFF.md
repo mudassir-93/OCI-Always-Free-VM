@@ -24,17 +24,20 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 | Item | Verified state |
 |---|---|
 | Default branch | `main` |
-| Latest verified main HEAD | `c99d45da847d8ace4ea9605cfb4ae3228a0c6bb9` |
+| Latest verified main HEAD | `948fc148a416556f25900600c21223605e4f3066` (PR #8 squash merge) |
 | PR #5 | Merged; CLI foundation |
 | PR #6 | Merged; installer and guided configuration |
 | PR #7 | Merged; interactive terminal home menu and grouped editor |
+| PR #8 | Merged; README release status and consolidated AI handoff |
+| PR #8 merge commit | `948fc148a416556f25900600c21223605e4f3066` |
 | PR #7 merge commit | `605a01ae92d57920ee116539aa8ed53eae976503` |
 | CI on PR #7 merge commit | Python checks run `45108762748` passed on Python 3.11/3.12; CLI foundation run `45108762718` passed on Windows and Ubuntu with Python 3.11/3.12 |
-| CI on latest verified main HEAD | Python checks run `45109001375` passed on Python 3.11/3.12; CLI foundation run `45109001365` passed on Windows/Ubuntu × Python 3.11/3.12 |
+| CI on latest verified main HEAD before PR #8 | Python checks run `45109001375` passed on Python 3.11/3.12; CLI foundation run `45109001365` passed on Windows/Ubuntu × Python 3.11/3.12 |
+| CI on PR #8 exact head `dfe10f57ffb6adae34b996ae3d65b1f094b9f8ca` | Python checks run `45109638479` passed on Python 3.11/3.12; CLI foundation run `45109638472` passed on Windows/Linux × Python 3.11/3.12 |
 | Local Windows update and interactive smoke test | Pending; the operator's PC is not currently available |
 | Live OCI / production work | Not performed |
 
-All three implementation PRs (#5, #6, and #7) are merged. There were no open PRs at the start of the current documentation review. Confirm the live branch head and CI again before merging any future PR.
+PRs #5–#8 are merged. PR #8's exact head passed both required workflows before squash merge. The GitHub status lookup used here does not expose the push-triggered post-merge workflow runs, so do not infer post-merge CI from an empty status response; verify the Actions page if that distinction is required.
 
 ## Implemented product
 
