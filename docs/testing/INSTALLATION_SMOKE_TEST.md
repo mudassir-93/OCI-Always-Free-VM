@@ -8,7 +8,7 @@ This checklist is for validating the CLI on a clean Windows or Linux workstation
 - Do not paste or commit OCI credentials, private keys, SSH private keys, full unredacted config files, or real OCIDs into test reports.
 - Do not run `oci-platform vm monitor --enable-create`.
 - Do not set `mode.creation_enabled=true` or add the launch confirmation phrase during smoke testing.
-- `doctor`, `config validate`, and `vm audit` may contact OCI when configured with a real profile. Use a test profile or stop before those commands if you do not explicitly intend a read-only live audit.
+- `oci-platform doctor` and `oci-platform config validate` perform local/offline checks and do not create OCI clients. `oci-platform vm audit` performs live read-only OCI API calls when given a real profile; run it only when you deliberately intend to audit that tenancy.
 - No VM launch, account upgrade, network provisioning, service installation, or production-server change is part of this checklist.
 
 ## Preconditions
