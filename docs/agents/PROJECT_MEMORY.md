@@ -156,3 +156,9 @@ The first implementation milestone is merged into `main` via PR #5. The currentl
 - Every successful wizard save reasserts account_type=FREE_TIER, allow_paid_resources=false, mode.creation_enabled=false, and an empty creation confirmation phrase.
 - Questionary is pinned as a small pure-Python UI dependency; the OCI SDK and engine remain unchanged.
 - PR #7 was squash-merged as 605a01ae92d57920ee116539aa8ed53eae976503. The exact merged main commit passed Python checks 45108762748 (3.11/3.12) and CLI foundation 45108762718 (Windows/Linux × 3.11/3.12). The Windows cp1252 output issue was fixed; tests assert cp1252 compatibility, home-region auto-sync, and credential-safe profile selection. Manual Windows Terminal interaction remains a separate smoke-test requirement.
+
+## Current delivery status and roadmap
+
+The current milestone-by-milestone plan, completion state, CI evidence, workstation validation gaps, and ordered next actions are maintained in [docs/PROJECT_STATUS.md](../PROJECT_STATUS.md). Read that file before continuing implementation or reporting project readiness.
+
+As of 2026-11-23, PRs #5–#8 are merged. Core CLI/installer/configuration/TUI code delivery is complete and the exact PR #8 head passed all six required CI jobs. Real Windows Terminal interaction, fresh Linux workstation installation, user-local configuration, and live OCI tenancy validation remain outstanding. No live VM launch has been performed; the guarded launch remains optional and disabled by default.
