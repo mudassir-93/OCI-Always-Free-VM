@@ -70,6 +70,9 @@ Important limitations:
 - pyproject.toml — installable Python project and `oci-platform` console entry point.
 - tests/test_cli.py — offline tests for setup, profile handling, command safety, engine argv integration, and process locking.
 - tests/test_tui.py — offline tests for terminal editor validation, region synchronization, encoding compatibility, backup, cancellation, and creation-disarm behavior.
+- tests/test_installers.py — offline Linux installer failure, virtual-environment cleanup, and existing-directory preservation tests.
+- tests/test_installers_windows.ps1 — Windows installer existing-directory preservation and failed-clone cleanup integration checks.
+- tests/test_install_linux.sh — hosted Ubuntu end-to-end fresh install, exact-commit, safe-config, destination-preservation, and failure-cleanup integration test.
 - oci-free — convenience command wrapper; all exposed monitoring commands remain read-only.
 - config.example.json — generic example configuration; never put real OCIDs or credentials here.
 - tests/test_policy.py — offline policy tests.
