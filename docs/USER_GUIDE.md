@@ -33,7 +33,7 @@ The program requires an explicit local Free Tier attestation. OCI APIs used by t
 
 ## OCI Always Free reference
 
-Oracle's current documentation describes the A1 Always Free allowance for Free Tier tenancies as up to 2 OCPUs and 12 GB memory, with 1,500 OCPU-hours and 9,000 GB-hours per month. It also documents 200 GB combined boot-volume and block-volume storage in the home region. These limits and eligibility rules may change. Verify the current terms and your own live tenancy limits before arming creation.
+Oracle's Free Tier limits and eligibility rules can change. Check the official documentation and your own tenancy's live limits before configuring or enabling any creation workflow. Do not rely on example values as a billing guarantee.
 
 - Oracle Always Free resources: https://docs.oracle.com/en-us/iaas/Content/FreeTier/freetier_topic-Always_Free_Resources.htm
 - Oracle A1 compute: https://docs.oracle.com/en-us/iaas/Content/Compute/References/arm.htm
