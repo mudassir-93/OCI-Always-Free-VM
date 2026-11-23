@@ -22,9 +22,11 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 
 | Item | Current state |
 |---|---|
-| `main` | `8eebb755b0eb29230e21994eed202a01e9217977` |
+| `main` | `9ab2d15534e8cd05e192266e591aa467b4f1cec0` |
 | PR #5 | MERGED into `main`; merge commit `29b66fbe83655692633b06d1c71157071969c1d6` |
 | PR #6 | MERGED into `main`; merge commit `8eebb755b0eb29230e21994eed202a01e9217977` |
+| PR #7 | OPEN; interactive terminal UX; https://github.com/mudassir-93/OCI-Always-Free-VM/pull/7 |
+| PR #7 head | `3dea45331efd80a970829d7583f426c7109ead06` (refresh if branch receives another commit) |
 | PR #6 branch | `feat/cli-v1-installer-wizard` |
 | PR #6 merged diff | 15 files, 1,224 additions, 6 deletions |
 | Main CI after PR #6 merge | NOT VERIFIED in this handoff. The available commit-status query returned no status entries, and the workflow-run connector only exposes pull-request-triggered runs. Check the GitHub Actions UI/API before claiming post-merge CI is green. |
@@ -34,6 +36,18 @@ Repository: https://github.com/mudassir-93/OCI-Always-Free-VM
 The user explicitly approved the order: PR #5 first, then PR #6, with fresh CI green before each merge. PR #5 and PR #6 are now both confirmed closed and merged into `main`. PR #6 was retargeted and de-stacked before merge; its final merge commit is the current `main` HEAD.
 
 
+## Interactive terminal UX — PR #7 (open)
+
+- Branch: feat/interactive-cli-ux.
+- Added a Questionary arrow-key home menu for no-argument interactive terminal use; menu actions are local-only and do not initiate OCI operations.
+- Added grouped, field-by-field configure editor with current values, selectable OCI SDK profile names, home-region auto-sync, validation feedback, review-before-save, backup, cancel, and safe Ctrl+C/EOF handling.
+- Retained line-oriented setup as oci-platform configure --plain and as the non-TTY fallback.
+- Added validation for local OCI SDK file/profile, region shape/match, AD, VCN/subnet/image OCID prefixes, SSH public-key file, A1-only shape, supported OS and boot volume performance, whole-number resource sizing, usage and policy limits.
+- Successful configure saves always force FREE_TIER, paid resources disabled, VM creation disabled, and clear the launch phrase.
+- Adds pinned dependency questionary==2.1.1 and offline tests for editor validation, backup, cancellation, home-menu routing, and EOF behavior.
+- CI run IDs: Python checks 45096927704; CLI foundation 45096927735. At last check, Python 3.11/3.12 passed and Ubuntu 3.11/3.12 passed; Windows 3.11/3.12 were still installing dependencies. Recheck before merging.
+- No local workstation update has been applied yet. User's existing starter config remains at %APPDATA%\oci-platform\config.json, and VM creation was observed disabled.
+- No OCI API calls, VM launches, billing/IAM/network changes, production deployments, or main-branch changes were made for PR #7.
 ## Implemented
 
 ### Milestone 1 — PR #5, merged
@@ -83,8 +97,24 @@ irm https://raw.githubusercontent.com/mudassir-93/OCI-Always-Free-VM/main/instal
 
 Prerequisites: Git for Windows and Python 3.11 or newer. The chosen install directory must not already exist. If it does, stop and choose a different `OCI_PLATFORM_HOME`; do not delete or overwrite existing files.
 
+## Exact next actions
+
+1. Recheck PR #7 Windows 3.11 and Python 3.12 GitHub Actions jobs for run 45096927735; Linux 3.11/3.12 and Python checks have passed at the last check.
+2. Review the full PR diff and CI outcome. Do not merge PR #7 without the user's explicit approval.
+3. After merge approval and successful required checks, update the existing Windows clone in place (do not rerun the installer because it refuses existing directories):
+
+   ```powershell
+   Set-Location "$HOME\oci-automation-platform"
+   git pull --ff-only origin main
+   .\.venv\Scripts\python.exe -m pip install -e .
+   .\.venv\Scripts\oci-platform.exe
+   ```
+
+4. Run the interactive configuration editor from the new home menu or with oci-platform configure; no cloud audit/launch is part of UI validation. Keep creation disabled.
+5. Manually smoke-test arrow keys, field editing, region auto-sync, back/cancel, review/save, and Ctrl+C in Windows Terminal/PowerShell before marking UX milestone complete.
+
 ## Session closeout
 
-- Update this handoff and append a dated entry to `docs/agents/WORKLOG.md` after meaningful milestones.
+- Update this handoff and append a dated entry to docs/agents/WORKLOG.md after meaningful milestones.
 - Report passed, failed, and not-run checks separately.
 - State explicitly whether main, OCI resources, billing/IAM, EC2, and production were changed.
